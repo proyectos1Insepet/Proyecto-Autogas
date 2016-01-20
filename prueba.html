@@ -1,0 +1,48 @@
+<html>
+ <head>
+  <link rel="stylesheet" type="text/css" href="estilo.css">
+  <meta charset="UTF-8">
+  <script script type="text/javascript" src="form.js"></script>
+  <title>Formulario de inicio</title>
+ </head>
+ <body>
+ <header class="header"><!--<img  src="fondo.jpg" width="180" height="119"></br></br>--> Configuración de parámetros de inicio </header>
+ 
+  
+  
+  
+<div id="form-main">
+  <div id="form-div">
+    <form class="form" id="form" action="enviar_p.php" method="post">
+      
+      <p class="name">
+        <input name="linea1" type="text" class="validate[required,custom[onlyLetter],length[0,100]] feedback-input" placeholder="Linea 1" id="linea1" />
+      </p>
+      <p class="name">
+        <input name="linea2" type="text" class="validate[required,custom[onlyLetter],length[0,100]] feedback-input" placeholder="Linea 2" id="linea2" />
+      </p>
+      <p class="name">
+        <input name="nit" type="text" class="validate[required,custom[onlyLetter]] feedback-input"  id="nit" placeholder="NIT" />
+      </p>
+      <p class="name">
+        <input name="tel" type="text" class="validate[required,custom[onlyLetter]] feedback-input"  id="tel" placeholder="TEL" />
+      </p>
+      
+      <p class="name">
+        <input name="dir" type="text" class="validate[required,custom[onlyLetter]] feedback-input"  id="dir" placeholder="Dirección" />
+      </p>
+      
+      <p class="name">
+        <input name="footer" type="text" class="validate[required,custom[onlyLetter]] feedback-input" id="footer" placeholder="Pie de recibo" />
+      </p>
+      
+      
+      <div class="submit">
+        <input input type="submit" name="submit" value="Ingresar"  id="button-blue"  />
+        <div class="ease"></div>
+      </div>
+    </form>
+  </div>
+ 
+ </body>
+</html>
