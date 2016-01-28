@@ -348,7 +348,7 @@ function corte_manual(){
                     printport.write('      900.459.737-5\n');
                     printport.write('      Tel: 7567262\n');
                     printport.write('     Cra 71 # 19-53\n\n');                      
-                    printport.write('  CORTE \n\n');
+                    printport.write('  Corte de venta \n\n');
                     printport.write('No de Corte: ' + String(last_corte+1) + '\n\n');
                 }
             });   
