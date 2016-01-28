@@ -34,9 +34,9 @@ var config_port_mux   = {baudrate: 9600, parser: sp.parsers.readline("*")};
 var muxport           = new sp.SerialPort(port_mux,config_port_mux);
 
 var port_print        = '/dev/ttyO1';
-var config_port_print = {baudrate: 19200, parser: sp2.parsers.readline("*")};//115200
+var config_port_print = {baudrate: 19200 , parser: sp2.parsers.readline("*")};// 115200
 var printport           = new sp2.SerialPort(port_print,config_port_print);
-
+     
 var conString         = "postgrest://db_admin:12345@localhost:5432/autogas";
 /*****************Variables para el flujo***************************/
 var b_bd;           //0 Estado Ok - 1 Problema BD al autorizar - 2 Problema al ingresar venta BD
