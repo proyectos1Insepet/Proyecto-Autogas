@@ -34,7 +34,7 @@ var config_port_mux   = {baudrate: 9600, parser: sp.parsers.readline("*")};
 var muxport           = new sp.SerialPort(port_mux,config_port_mux);
 
 var port_print        = '/dev/ttyO1';
-var config_port_print = {baudrate: 19200 , parser: sp2.parsers.readline("*")};// 115200
+var config_port_print = {baudrate: 115200, parser: sp2.parsers.readline("*")};// 115200
 var printport           = new sp2.SerialPort(port_print,config_port_print);
      
 var conString         = "postgrest://db_admin:12345@localhost:5432/autogas";
@@ -75,7 +75,6 @@ var imprime_contadores;
 var total_vol_p1;
 var total_vol_p2;
 var total_vol_p3;
-var vol_tabla;
 var n_producto1;
 var n_producto2;
 var n_producto3;
@@ -90,14 +89,14 @@ var id_p4;
 var permite;
 
 /********************Arreglos**************************************/            
-var serial          = new Buffer(16); 
-var precio          = new Buffer(5);
-var preset          = new Buffer(7); /*global preset*/
-var km              = new Buffer(7);
-var idestacion      = new Buffer(4);
-var autorizacion    = new Buffer(38);
-var volumen         = new Buffer(7);
-var dinero          = new Buffer(7);
+serial          = new Buffer(16); 
+precio          = new Buffer(5);
+preset          = new Buffer(7); /*global preset*/
+km              = new Buffer(7);
+idestacion      = new Buffer(4);
+autorizacion    = new Buffer(38);
+volumen         = new Buffer(7);
+dinero          = new Buffer(7);
 var id_venta        = new Buffer(7);
 var producto1       = new Buffer(12);
 var producto2       = new Buffer(12);
@@ -343,15 +342,31 @@ function corte_manual(){
                     return console.error('error de conexion', err);
                 }else{
                     var last_corte = result.rows[0].max;
-                    printport.write('  Grupo EDS Autogas S.A.S\n');
-                    printport.write('     Esso Industriales\n');
-                    printport.write('      900.459.737-5\n');
-                    printport.write('      Tel: 7567262\n');
-                    printport.write('     Cra 71 # 19-53\n\n');                      
+                    client.query("SELECT linea1, linea2, nit, tel, dir FROM recibo;", function(err,result){
+                    done();
+                    if(err){
+                        b_bd = 2;
+                        return console.error('error de conexion', err);
+                    }else{
+                    var linea1 = result.rows[0].linea1;
+                    var linea2 = result.rows[0].linea2;
+                    var nit = result.rows[0].nit;
+                    var tel = result.rows[0].tel;
+                    var dir = result.rows[0].dir;
+                    printport.write(linea1 +'\n');
+                    printport.write('   '+linea2 +'\n');
+                    printport.write('      '+nit+'\n');
+                    printport.write('      Tel: '+tel+'\n');
+                    printport.write('       '+dir+ '\n\n');                      
                     printport.write('  Corte de venta \n\n');
                     printport.write('No de Corte: ' + String(last_corte+1) + '\n\n');
+                    var f = new Date();
+					printport.write('Fecha:' + String(f.getDate() + "-" + (f.getMonth() + 1) + "-" + f.getFullYear() + ' ' + f.getHours() + ':' + f.getMinutes()) + '\n\n');                                                      
+                        
+                    }
+                    });
                 }
-            });   
+            });
             client.query("SELECT MAX(ultima_venta) FROM cortem;", function(err,result){
                 done();
                 if(err){
@@ -387,8 +402,7 @@ function corte_manual(){
 						        }
 						    });
                     var last_id = result.rows[0].max; 
-                    var f = new Date();
-					printport.write('Fecha:' + String(f.getDate() + "-" + (f.getMonth() + 1) + "-" + f.getFullYear() + ' ' + f.getHours() + ':' + f.getMinutes()) + '\n\n');                                                      
+                    
                     //<!--Sumatoria de dinero de las ventas realizadas por Beagle-->
                     client.query(sprintf("SELECT SUM(CAST(dinero AS INT)),COUNT(dinero) FROM venta WHERE id>%1$s AND producto='%2$s'; ", last_id,idenproducto1), function(err,result){
 						done();
@@ -537,10 +551,7 @@ function rx_data_mux(data){
                 for(i=6; i<13; i++){                                        //Volumen
                     volumen[i-6] = data.charCodeAt(i);
                 }
-                volumen[3]=46;
-                vol_tabla = parseFloat(volumen);
                 console.log('Volumen: '+volumen);  
-                console.log('Volumen tabla: '+vol_tabla);
                 for(i=13; i<20; i++){                                       //Dinero
                     dinero[i-13] = data.charCodeAt(i); 
                 }  
@@ -948,8 +959,8 @@ function rest_auto(){
         muxport.write('E');
         muxport.write(String(cara));
         muxport.write('1');                         //Limpia estado del mux e inicia pantalla
-        printport.write('\n\nLos datos no se lograron\nenviar al servidor.\n\n\n\n\n\n\n\n\n\n\n');
         muxport.write('*');
+        printport.write('\n\nLos datos no se lograron\nenviar al servidor.\n\n\n\n\n\n\n');
     });
 }
 /*
@@ -1157,7 +1168,8 @@ function save_sale(){
         if(err){
             return console.error('error de conexion', err);
         }else{
-            
+            volumen[3]=46;
+             var vol_tabla = parseFloat(volumen);
             client.query("SELECT MAX(id) FROM venta;", function(err,result){        //consulto maximo id de venta
                 done();
                 if(err){
