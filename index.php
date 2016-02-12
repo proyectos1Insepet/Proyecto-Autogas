@@ -25,7 +25,9 @@ if (isset($_POST['enviar'])) {
    $tel = isset($_POST['tel'])? $_POST['tel'] : NULL;
    $dir = isset($_POST['dir'])? $_POST['dir'] : NULL;
    $footer = isset($_POST['footer'])? $_POST['footer'] : NULL;
-   $query = "UPDATE recibo SET linea1 = '$linea1', linea2 = '$linea2', nit = '$nit', tel = '$tel', dir = '$dir',  footer = '$footer' ";
+   $url = isset($_POST['url'])? $_POST['url'] : NULL;
+   $url_save = isset($_POST['url_save'])? $_POST['url_save'] : NULL;
+   $query = "UPDATE recibo SET linea1 = '$linea1', linea2 = '$linea2', nit = '$nit', tel = '$tel', dir = '$dir',  footer = '$footer', url = '$url', url_save = '$url_save' ";
    $result = pg_query($query) or die('La consulta fallo: ' . \pg_last_error());
    // Liberando el conjunto de resultados
    pg_free_result($result);
@@ -37,7 +39,7 @@ if (isset($_POST['enviar'])) {
   
  <div id="form-main">
   <div id="form-div">
-      <form class="form" id="form" action="index2.php" method="post">
+      <form class="form" id="form" action="index.php" method="post">
       
       <p class="name">
         <input name="linea1" type="text" class="validate[required,custom[onlyLetter],length[0,100]] feedback-input" placeholder="Linea 1"  />
@@ -58,6 +60,14 @@ if (isset($_POST['enviar'])) {
       
       <p class="name">
         <input name="footer" type="text" class="validate[required,custom[onlyLetter]] feedback-input" id="footer" placeholder="Pie de recibo" />
+      </p>
+	  
+	  <p class="name">
+        <input name="url" type="text" class="validate[required,custom[onlyLetter]] feedback-input" id="url" placeholder="Url Autorización" />
+      </p>
+	  
+	  <p class="name">
+        <input name="url_save" type="text" class="validate[required,custom[onlyLetter]] feedback-input" id="url_save" placeholder="Url Almacenamiento" />
       </p>
       
       

@@ -121,10 +121,12 @@ ALTER TABLE public.productos OWNER TO postgres;
 CREATE TABLE recibo (
     linea1 character varying(30),
     linea2 character varying(80),
-    nit character varying(12),
+    nit character varying(15),
     tel character varying(12),
     dir character varying(30),
-    footer character varying(30)
+    footer character varying(30),
+    url character varying(75),
+    url_save character varying(75)
 );
 
 

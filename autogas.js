@@ -87,6 +87,14 @@ var id_p2;
 var id_p3;
 var id_p4;
 var permite;
+var linea1;
+var linea2;
+var nit;
+var tel;
+var dir;
+var footer;
+var url_auto;
+var url_save;
 
 /********************Arreglos**************************************/            
 serial          = new Buffer(16); 
@@ -126,6 +134,25 @@ function reinicio(error){
              b_bd = 1;
              return console.error('error de conexion 1', err);
          }else{
+             
+              client.query("SELECT linea1, linea2, nit, tel, dir, footer, url, url_save FROM recibo;", function(err,result){
+                    done();
+                    if(err){
+                        b_bd = 2;
+                        return console.error('error de conexion', err);
+                    }else{
+                    linea1 = result.rows[0].linea1;
+                    linea2 = result.rows[0].linea2;
+                    nit = result.rows[0].nit;
+                    tel = result.rows[0].tel;
+                    dir = result.rows[0].dir;
+                    footer = result.rows[0].footer;
+                    url_auto = result.rows[0].url;
+                    url_save = result.rows[0].url_save;
+                    }
+              });
+             
+             
              client.query(sprintf("SELECT MAX(id) FROM venta"), function(err,result){
              done();
              if(err){
@@ -342,30 +369,20 @@ function corte_manual(){
                     return console.error('error de conexion', err);
                 }else{
                     var last_corte = result.rows[0].max;
-                    client.query("SELECT linea1, linea2, nit, tel, dir FROM recibo;", function(err,result){
-                    done();
-                    if(err){
-                        b_bd = 2;
-                        return console.error('error de conexion', err);
-                    }else{
-                    var linea1 = result.rows[0].linea1;
-                    var linea2 = result.rows[0].linea2;
-                    var nit = result.rows[0].nit;
-                    var tel = result.rows[0].tel;
-                    var dir = result.rows[0].dir;
-                    printport.write(linea1 +'\n');
+                   
+                    printport.write('  '+linea1 +'\n');
                     printport.write('   '+linea2 +'\n');
                     printport.write('      '+nit+'\n');
                     printport.write('      Tel: '+tel+'\n');
-                    printport.write('       '+dir+ '\n\n');                      
+                    printport.write('  '+dir+ '\n\n');                      
                     printport.write('  Corte de venta \n\n');
                     printport.write('No de Corte: ' + String(last_corte+1) + '\n\n');
                     var f = new Date();
 					printport.write('Fecha:' + String(f.getDate() + "-" + (f.getMonth() + 1) + "-" + f.getFullYear() + ' ' + f.getHours() + ':' + f.getMinutes()) + '\n\n');                                                      
                         
                     }
-                    });
-                }
+                
+                
             });
             client.query("SELECT MAX(ultima_venta) FROM cortem;", function(err,result){
                 done();
@@ -536,7 +553,7 @@ function rx_data_mux(data){
                     printport.write('\n\nCierre turno\npara iniciar venta.\n\n\n\n\n\n\n\n\n\n\n');
                     muxport.write('*');
                 }else{
-                    var a = sprintf("http://190.85.166.40/ProyectoAliados/AT0001.svc/rest/Authorize/%1$s/%2$s/%3$s/%4$s/%5$s/%6$s/%7$s", serial, idproducto, idestacion, precio, tipopreset, preset, km);
+                    var a = sprintf(url_auto+"/rest/Authorize/%1$s/%2$s/%3$s/%4$s/%5$s/%6$s/%7$s", serial, idproducto, idestacion, precio, tipopreset, preset, km);
                     console.log('>>'+a);
                     muxport.write('OK');
                     rest_auto();
@@ -582,7 +599,7 @@ function rx_data_mux(data){
                 console.log('Fecha: '+fecha);
                 muxport.write('OK');
                  var n_id = idestacion + id_venta;
-                 var b = sprintf("http://190.85.166.40/ProyectoAliados/CV0001.svc/rest/UploadSale/%1$s/%2$s/%3$s/%4$s/%5$s/%6$s/%7$s/%8$s/%9$s/%10$s/%11$s/%12$s", cara, idproducto, volumen, dinero, precio, idestacion, serial, autorizacion, n_id, km, fecha, fecha);
+                 var b = sprintf(url_save+"/rest/UploadSale/%1$s/%2$s/%3$s/%4$s/%5$s/%6$s/%7$s/%8$s/%9$s/%10$s/%11$s/%12$s", cara, idproducto, volumen, dinero, precio, idestacion, serial, autorizacion, n_id, km, fecha, fecha);
                 console.log('>>'+b);
                 rest_sale();                
             break;
@@ -926,7 +943,7 @@ function rx_data_mux(data){
 function rest_auto(){
     trycatch(function() {
         var opt_rest_autorizar = {
-                url: sprintf("http://190.85.166.40/ProyectoAliados/AT0001.svc/rest/Authorize/%1$s/%2$s/%3$s/%4$s/%5$s/%6$s/%7$s", serial, idproducto, idestacion, precio, tipopreset, preset, km),                
+                url: sprintf(url_auto+"/rest/Authorize/%1$s/%2$s/%3$s/%4$s/%5$s/%6$s/%7$s", serial, idproducto, idestacion, precio, tipopreset, preset, km),                
                 method: "POST",
             };  
         rest_autorizar(opt_rest_autorizar, 
@@ -1216,7 +1233,7 @@ function save_sale(){
 function rest_sale(){
     trycatch(function() {
         var opt_rest_venta = {
-                url: sprintf("http://190.85.166.40/ProyectoAliados/CV0001.svc/rest/UploadSale/%1$s/%2$s/%3$s/%4$s/%5$s/%6$s/%7$s/%8$s/%9$s/%10$s/%11$s/%12$s", cara, idproducto, volumen, dinero, precio, idestacion, serial, autorizacion, id_venta, km, fecha, fecha), /*global autorizacion*//*global idestacion*/
+                url: sprintf(url_save+"/rest/UploadSale/%1$s/%2$s/%3$s/%4$s/%5$s/%6$s/%7$s/%8$s/%9$s/%10$s/%11$s/%12$s", cara, idproducto, volumen, dinero, precio, idestacion, serial, autorizacion, id_venta, km, fecha, fecha), /*global autorizacion*//*global idestacion*/
                 method: "POST",
             };    
         rest_venta(opt_rest_venta, 
@@ -1285,11 +1302,11 @@ function print_venta(){
         muxport.write('*');        
         console.log("RECIBO");
         console.log('\n\n');
-        printport.write('      Grupo EDS Autogas S.A.S \n');
-        printport.write('         Esso Industriales\n');
-        printport.write('          900.459.737-5\n');
-        printport.write('          Tel: 7567262\n');
-        printport.write('        Cra 71 # 19-53\n\n');
+        printport.write('  '+linea1 +'\n');
+        printport.write('   '+linea2 +'\n');
+        printport.write('      '+nit+'\n');
+        printport.write('      Tel: '+tel+'\n');
+        printport.write('  '+dir+ '\n\n');
         printport.write('Numero: ' +id_venta+ '\n');
         var f = new Date();
 		printport.write('Fecha:' + String(f.getDate() + "-" + (f.getMonth() + 1) + "-" + f.getFullYear() + ' ' + f.getHours() + ':' + f.getMinutes()) + '\n\n');                                                      
@@ -1342,7 +1359,7 @@ function print_venta(){
         printport.write('       --------------------'+ '\n\n');
         printport.write('Cedula:' + '\n');
         printport.write('       --------------------'+ '\n\n');
-        printport.write('     Gracias por su Compra'+ '\n');
+        printport.write(footer+ '\n');
         printport.write('         Vuelva Pronto'+ '\n\n\n\n\n\n\n\n\n\n');   
     }
     else{
@@ -1447,11 +1464,11 @@ function print_venta(){
         printport.write(String(codigoError)); 
         printport.write('\n');
         printport.write('  VENTA YA ENVIADA A SERVIDOR \n\n');
-        printport.write('      Grupo EDS Autogas S.A.S \n');
-        printport.write('         Esso Industriales\n');
-        printport.write('          900.459.737-5\n');
-        printport.write('          Tel: 7567262\n');
-        printport.write('        Cra 71 # 19-53\n\n');
+        printport.write('  '+linea1 +'\n');
+        printport.write('   '+linea2 +'\n');
+        printport.write('      '+nit+'\n');
+        printport.write('      Tel: '+tel+'\n');
+        printport.write('  '+dir+ '\n\n');
         printport.write('Numero: ' +id_venta+ '\n'); /*global id_venta*/
         f = new Date();
 		printport.write('Fecha:' + String(f.getDate() + "-" + (f.getMonth() + 1) + "-" + f.getFullYear() + ' ' + f.getHours() + ':' + f.getMinutes()) + '\n\n');                                                      
@@ -1503,7 +1520,7 @@ function print_venta(){
         printport.write('       --------------------'+ '\n\n');
         printport.write('Cedula:' + '\n');
         printport.write('       --------------------'+ '\n\n');
-        printport.write('     Gracias por su Compra'+ '\n');
+        printport.write(footer+ '\n');
         printport.write('         Vuelva Pronto'+ '\n\n\n\n\n\n\n\n\n\n'); 
         }
         //mod ayer
