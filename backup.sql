@@ -34,7 +34,7 @@ SET default_with_oids = false;
 
 CREATE TABLE cortem (
     id integer NOT NULL,
-    ultima_venta character(8),
+    ultima_venta integer,
     u_vol character(12),
     u_vol_2 character(12),
     u_vol_3 character(12)
@@ -62,42 +62,6 @@ ALTER TABLE public.cortem_id_seq OWNER TO postgres;
 --
 
 ALTER SEQUENCE cortem_id_seq OWNED BY cortem.id;
-
-
---
--- Name: cortep; Type: TABLE; Schema: public; Owner: postgres; Tablespace: 
---
-
-CREATE TABLE cortep (
-    id integer NOT NULL,
-    ultima_venta character(8),
-    u_vol character(12),
-    u_vol_2 character(12),
-    u_vol_3 character(12)
-);
-
-
-ALTER TABLE public.cortep OWNER TO postgres;
-
---
--- Name: cortep_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
---
-
-CREATE SEQUENCE cortep_id_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-
-ALTER TABLE public.cortep_id_seq OWNER TO postgres;
-
---
--- Name: cortep_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
---
-
-ALTER SEQUENCE cortep_id_seq OWNED BY cortep.id;
 
 
 --
@@ -187,13 +151,6 @@ ALTER TABLE ONLY cortem ALTER COLUMN id SET DEFAULT nextval('cortem_id_seq'::reg
 -- Name: id; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
-ALTER TABLE ONLY cortep ALTER COLUMN id SET DEFAULT nextval('cortep_id_seq'::regclass);
-
-
---
--- Name: id; Type: DEFAULT; Schema: public; Owner: postgres
---
-
 ALTER TABLE ONLY venta ALTER COLUMN id SET DEFAULT nextval('venta_id_seq'::regclass);
 
 
@@ -203,14 +160,6 @@ ALTER TABLE ONLY venta ALTER COLUMN id SET DEFAULT nextval('venta_id_seq'::regcl
 
 ALTER TABLE ONLY cortem
     ADD CONSTRAINT cortem_pkey PRIMARY KEY (id);
-
-
---
--- Name: cortep_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres; Tablespace: 
---
-
-ALTER TABLE ONLY cortep
-    ADD CONSTRAINT cortep_pkey PRIMARY KEY (id);
 
 
 --

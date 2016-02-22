@@ -390,6 +390,8 @@ function corte_manual(){
                     b_bd = 2;
                     return console.error('error de conexion', err);
                 }else{
+                    var last_id = result.rows[0].max;
+                    console.log('Resultado: '+result.rows[0].max);
                     // Lee el último volumen electrónico del equipo en la DB y hace la resta con el valor enviado por el equipo
                     client.query(sprintf("SELECT MAX(CAST(u_vol AS INT)) FROM cortem;"),function(err,result){
 						        done();
@@ -418,7 +420,7 @@ function corte_manual(){
 						            console.log(total_vol_p3);
 						        }
 						    });
-                    var last_id = result.rows[0].max; 
+                    
                     
                     //<!--Sumatoria de dinero de las ventas realizadas por Beagle-->
                     client.query(sprintf("SELECT SUM(CAST(dinero AS INT)),COUNT(dinero) FROM venta WHERE id>%1$s AND producto='%2$s'; ", last_id,idenproducto1), function(err,result){
@@ -426,6 +428,8 @@ function corte_manual(){
 						if(err){
 							return console.error('error de conexion 2',err);
 						}else{
+						    console.log("Primer producto");
+						    console.log('Cuenta'+result.rows[0].count);
 						    printport.write('Ventas ' +n_producto1+':' + String(result.rows[0].count) + '\n'); 
                             if(result.rows[0].sum==null){
                                 result.rows[0].sum=0;}
@@ -437,11 +441,13 @@ function corte_manual(){
 					
 					if(productos > 2)
 					{
+					    console.log("Segundo producto");
                     client.query(sprintf("SELECT SUM(CAST(dinero AS INT)),COUNT(dinero) FROM venta WHERE id>%1$s AND producto='%2$s'; ", last_id,idenproducto2), function(err,result){
                         done();
                         if(err){
                             return console.error('error de conexion 2', err);
                         }else{
+                            console.log('Cuenta'+result.rows[0].count);
                             printport.write('Ventas '+n_producto2+':' + String(result.rows[0].count) + '\n'); 
                             if(result.rows[0].sum==null){
                                 result.rows[0].sum=0;}
@@ -454,14 +460,16 @@ function corte_manual(){
 					
                     if (productos > 5)
                     {
+                        console.log("Tercer producto");
 					client.query(sprintf("SELECT SUM(CAST(dinero AS INT)),COUNT(dinero) FROM venta WHERE id>%1$s AND producto='%2$s'; ", last_id,idenproducto3), function(err,result){
                         done();
                         if(err){
                             return console.error('error de conexion 2', err);
                         }else{
+                            console.log('Cuenta'+result.rows[0].count);
                             printport.write('Ventas '+n_producto3+':' + String(result.rows[0].count) + '\n'); 
                             if(result.rows[0].sum==null){
-                                result.rows[0].sum=0;}
+                            result.rows[0].sum=0;}
                             printport.write('Total '+n_producto3+' $: ' + String(result.rows[0].sum) + '\n');
                             printport.write('Total '+n_producto3+' G: ' +String(total_vol_p3.toFixed(2)) + '\n');
                             printport.write(n_producto3+' Vol. Final: ' + parseFloat(producto3)/100 + '\n\n');
@@ -598,9 +606,10 @@ function rx_data_mux(data){
                 fecha = f.getDate() + "-" + (f.getMonth() +1) + "-" + f.getFullYear() + ' ' + f.getHours() + '_' + f.getMinutes();
                 console.log('Fecha: '+fecha);
                 muxport.write('OK');
-                 var n_id = idestacion + id_venta;
-                 var b = sprintf(url_save+"/rest/UploadSale/%1$s/%2$s/%3$s/%4$s/%5$s/%6$s/%7$s/%8$s/%9$s/%10$s/%11$s/%12$s", cara, idproducto, volumen, dinero, precio, idestacion, serial, autorizacion, n_id, km, fecha, fecha);
+                var n_id = idestacion + id_venta;
+                var b = sprintf(url_save+"/rest/UploadSale/%1$s/%2$s/%3$s/%4$s/%5$s/%6$s/%7$s/%8$s/%9$s/%10$s/%11$s/%12$s", cara, idproducto, volumen, dinero, precio, idestacion, serial, autorizacion, n_id, km, fecha, fecha);
                 console.log('>>'+b);
+                console.log(n_id);
                 rest_sale();                
             break;
             
@@ -1231,11 +1240,14 @@ function save_sale(){
 */
 
 function rest_sale(){
+    var n_id = idestacion + id_venta;
     trycatch(function() {
         var opt_rest_venta = {
-                url: sprintf(url_save+"/rest/UploadSale/%1$s/%2$s/%3$s/%4$s/%5$s/%6$s/%7$s/%8$s/%9$s/%10$s/%11$s/%12$s", cara, idproducto, volumen, dinero, precio, idestacion, serial, autorizacion, id_venta, km, fecha, fecha), /*global autorizacion*//*global idestacion*/
+				
+                url: sprintf(url_save+"/rest/UploadSale/%1$s/%2$s/%3$s/%4$s/%5$s/%6$s/%7$s/%8$s/%9$s/%10$s/%11$s/%12$s", cara, idproducto, volumen, dinero, precio, idestacion, serial, autorizacion, n_id, km, fecha, fecha), /*global autorizacion*//*global idestacion*/
                 method: "POST",
-            };    
+            };   
+            console.log(n_id);
         rest_venta(opt_rest_venta, 
         function(error, response, body) {
           
@@ -1276,7 +1288,7 @@ function rest_sale(){
         b_enviada = 'FALSE'; 
         if(imp =='0'){
             printport.write('No se logró enviar al servidor\n\n'); //Informa que no se pudo subir venta a remoto
-            printport.write('****VENTA ALMACENADA LOCAL****\n\n');
+            printport.write('*****VENTA ALMACENADA LOCAL*****\n\n');
             save_sale();    /// Guarda venta cuando no hay conexión a servidor
             
         }
@@ -1360,7 +1372,7 @@ function print_venta(){
         printport.write('Cedula:' + '\n');
         printport.write('       --------------------'+ '\n\n');
         printport.write(footer+ '\n');
-        printport.write('         Vuelva Pronto'+ '\n\n\n\n\n\n\n\n\n\n');   
+        printport.write('\n\n\n\n\n\n\n');   
     }
     else{
         muxport.write('BBB');
@@ -1521,7 +1533,7 @@ function print_venta(){
         printport.write('Cedula:' + '\n');
         printport.write('       --------------------'+ '\n\n');
         printport.write(footer+ '\n');
-        printport.write('         Vuelva Pronto'+ '\n\n\n\n\n\n\n\n\n\n'); 
+        printport.write('\n\n\n\n\n\n\n'); 
         }
         //mod ayer
     } 
@@ -1539,7 +1551,7 @@ function print_venta(){
 function watchful(){
     console.log("Vigilando");
     var f = new Date();
-    if((f.getHours()=='10')&&(f.getMinutes()=='37')&&(corte_ok==0)){
+    if((f.getHours()=='11')&&(f.getMinutes()=='37')&&(corte_ok==0)){
         printport.write('MOMENTO DE CORTE\n');
         printport.write('REALICE CIERRE DE TURNO\n');
         printport.write('PARA INICIAR VENTA\n\n\n\n\n\n');              //A la hora programada se ejecuta la funcion para obligar a corte
