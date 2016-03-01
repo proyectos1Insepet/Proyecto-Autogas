@@ -13,7 +13,8 @@ and open the template in the editor.
  </head>
  <body>
  <header class="header"><!--<img  src="fondo.jpg" width="180" height="119"></br></br>--> Configuración de parámetros de inicio </header>
-       
+  
+<div id="form-div" class="form">  
         <?php 
 if (isset($_POST['enviar'])) {
    // process form
@@ -36,6 +37,7 @@ if (isset($_POST['enviar'])) {
    echo "¡Gracias! Hemos recibido sus datos.\n"; 
 }else{
 ?> 
+ </div> 
   
  <div id="form-main">
   <div id="form-div">
