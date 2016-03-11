@@ -102,7 +102,7 @@ ALTER TABLE public.recibo OWNER TO postgres;
 
 CREATE TABLE venta (
     autorizacion character varying(38),
-    id_venta character varying(8),
+    id_venta character varying(12),
     id_estacion character varying(4),
     serial character varying(16),
     km character varying(10),

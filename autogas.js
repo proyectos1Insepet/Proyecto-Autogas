@@ -1212,7 +1212,8 @@ function save_sale(){
                        imp ='1';
                     }
                     console.log(id_venta);
-                    client.query(sprintf("UPDATE venta SET (id_venta, id_estacion, serial, km, cara, producto, precio, dinero, volumen, fecha, enviada) = ('%1$s','%2$s', '%3$s', '%4$s', '%5$s', '%6$s', '%7$s', '%8$s', '%9$s', '%10$s','%11$s') WHERE id='%12$s'", id_venta, idestacion, serial, km, cara, idproducto, precio, dinero, vol_tabla, fecha, b_enviada,last_id), function(err,result){
+                     var n_id = idestacion + id_venta;
+                    client.query(sprintf("UPDATE venta SET (id_venta, id_estacion, serial, km, cara, producto, precio, dinero, volumen, fecha, enviada) = ('%1$s','%2$s', '%3$s', '%4$s', '%5$s', '%6$s', '%7$s', '%8$s', '%9$s', '%10$s','%11$s') WHERE id='%12$s'", n_id, idestacion, serial, km, cara, idproducto, precio, dinero, vol_tabla, fecha, b_enviada,last_id), function(err,result){
                     
                         done();
                         if(err){
@@ -1319,10 +1320,11 @@ function print_venta(){
         printport.write('      '+nit+'\n');
         printport.write('      Tel: '+tel+'\n');
         printport.write('  '+dir+ '\n\n');
-        printport.write('Numero: ' +id_venta+ '\n');
+        
         var f = new Date();
 		printport.write('Fecha:' + String(f.getDate() + "-" + (f.getMonth() + 1) + "-" + f.getFullYear() + ' ' + f.getHours() + ':' + f.getMinutes()) + '\n\n');                                                      
         /*printport.write('Fecha : '+fecha+'\n\n');*/
+        printport.write('Numero: ' +idestacion+id_venta+ '\n');
         printport.write('Empresa:\n\n');
         printport.write(String(nombreCuenta) + '\n');
         printport.write('Serial:\n\n');
