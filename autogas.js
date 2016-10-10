@@ -31,11 +31,11 @@ var pg              = require('pg');
 */
 var port_mux          = '/dev/ttyO4';
 var config_port_mux   = {baudrate: 9600, parser: sp.parsers.readline("*")};
-var muxport           = new sp.SerialPort(port_mux,config_port_mux,abrir);
+var muxport           = new sp.SerialPort(port_mux,config_port_mux);
 
 var port_print        = '/dev/ttyO1';
 var config_port_print = {baudrate: 115200, parser: sp2.parsers.readline("*")};// 115200
-var printport           = new sp2.SerialPort(port_print,config_port_print,abrir_print);
+var printport           = new sp2.SerialPort(port_print,config_port_print);
      
 var conString         = "postgrest://db_admin:12345@localhost:5432/autogas";
 /*****************Variables para el flujo***************************/
@@ -117,10 +117,10 @@ var producto3       = new Buffer(12);
 
 /*
 *********************************************************************************************************
-*                                     INICIALIZACI?N DEL M?DULO                                         *
+*                                     INICIALIZACIÓN DEL MÓDULO                                         *
 *                                                                                                       *
 *   Lee la base de datos para determinar si hay ventas sin cerrar e inicializar los nombres de los      *
-*   productos seg?n la ?ltima configuraci?n y ultima venta                                              *
+*   productos según la última configuración y ultima venta                                              *
 *********************************************************************************************************
 */
     
@@ -139,7 +139,7 @@ function reinicio(error){
                     done();
                     if(err){
                         b_bd = 2;
-                        return console.error('error select recibo', err);
+                        return console.error('error de conexion', err);
                     }else{
                     linea1 = result.rows[0].linea1;
                     linea2 = result.rows[0].linea2;
@@ -157,14 +157,14 @@ function reinicio(error){
              done();
              if(err){
                  b_bd = 1;
-                 return console.error('error max venta', err);
+                 return console.error('error seleccionar ultima venta', err);
              }else{
                  var last_id = result.rows[0].max;
                  client.query(sprintf("SELECT enviada FROM venta WHERE id ='%1$s'",last_id), function(err,result){
                     done();
                     if(err){
                         b_bd = 1;
-                        return console.error('error de enviada', err);
+                        return console.error('error seleccionar venta enviada', err);
                     }else{
                     console.log(result.rows[0].enviada);
                     if (result.rows[0].enviada == false){
@@ -182,16 +182,16 @@ function reinicio(error){
             });
             id_p1 = 0;
             id_p2 = 0;  //Posiciones de los productos
-            id_p3 = 0;  //Ej id_p1 = 2  Diesel (producto 1 en posici?n 2) 
+            id_p3 = 0;  //Ej id_p1 = 2  Diesel (producto 1 en posición 2) 
             id_p4 = 0;  // id_px = 0; no hay producto en dispensador
-            idenproducto1 = 0;   // Identificador de producto seg?n manguera
+            idenproducto1 = 0;   // Identificador de producto según manguera
             idenproducto2 = 0;   // (Diesel = 1, Corriente = 2, Extra = 3, Supreme Diesel = 4)
             idenproducto3 = 0;
             client.query(sprintf("SELECT MAX(diesel) FROM productos"), function(err,result){
             done();
             if(err){
                 b_bd = 1;
-                return console.error('error max diesel', err);
+                return console.error('error seleccionar productos', err);
             }else{
                 switch (result.rows[0].max){
                     case 1:
@@ -220,7 +220,7 @@ function reinicio(error){
             done();
             if(err){
                 b_bd = 1;
-                return console.error('error max corriente', err);
+                return console.error('error seleccionar productos', err);
             }else{
                 switch (result.rows[0].max){
                     case 1:
@@ -247,7 +247,7 @@ function reinicio(error){
             done();
             if(err){
                 b_bd = 1;
-                return console.error('error max extra', err);
+                return console.error('error seleccionar productos', err);
             }else{
                 switch (result.rows[0].max){
                     case 1:
@@ -274,7 +274,7 @@ function reinicio(error){
             done();
             if(err){
                 b_bd = 1;
-                return console.error('error max diesel', err);
+                return console.error('error seleccionar productos', err);
             }else{
                 switch (result.rows[0].max){
                     case 1:
@@ -319,15 +319,13 @@ function reinicio(error){
 *********************************************************************************************************
 */
 function abrir(error){
-   if (error){
-       console.log('failed to open: '+error);
-   } else{
+   
        corte_ok=0;
        b_enviada = 'TRUE';
        console.log('open '+port_mux);
        muxport.on('data',rx_data_mux);
        reinicio();
-   }
+   
 }
 /*
 *********************************************************************************************************
@@ -359,14 +357,14 @@ function corte_manual(){
     pg.connect(conString, function(err, client, done){
         if(err){
             b_bd = 1;
-            return console.error('error conectar', err);
+            return console.error('error de conexion 1', err);
         }else{
             console.log('Entro a corte');
             client.query("SELECT MAX(id) FROM cortem;", function(err,result){
                 done();
                 if(err){
                     b_bd = 2;
-                    return console.error('error max cortem', err);
+                    return console.error('error de conexion', err);
                 }else{
                     var last_corte = result.rows[0].max;
                    
@@ -392,11 +390,11 @@ function corte_manual(){
                 }else{
                     var last_id = result.rows[0].max;
                     console.log('Resultado: '+result.rows[0].max);
-                    // Lee el ?ltimo volumen electr?nico del equipo en la DB y hace la resta con el valor enviado por el equipo
+                    // Lee el último volumen electrónico del equipo en la DB y hace la resta con el valor enviado por el equipo
                     client.query(sprintf("SELECT MAX(CAST(u_vol AS INT)) FROM cortem;"),function(err,result){
 						        done();
 						        if(err){
-							        return console.error('error max cast vol',err);
+							        return console.error('error toma totales',err);
 						        }else{
 						            total_vol_p1 = parseFloat(producto1)/100 - parseFloat(result.rows[0].max)/100; /*global producto1*/
 						            console.log(total_vol_p1);
@@ -405,7 +403,7 @@ function corte_manual(){
 			        client.query(sprintf("SELECT MAX(CAST(u_vol_2 AS INT)) FROM cortem;"),function(err,result){
 						        done();
 						        if(err){
-							        return console.error('error max cast vol',err);
+							        return console.error('error toma totales',err);
 						        }else{
 						            total_vol_p2 = parseFloat(producto2)/100 - parseFloat(result.rows[0].max)/100; /*global producto2*/
 						            console.log(total_vol_p2);
@@ -414,7 +412,7 @@ function corte_manual(){
 						    client.query(sprintf("SELECT MAX(CAST(u_vol_3 AS INT)) FROM cortem;"),function(err,result){
 						        done();
 						        if(err){
-							        return console.error('error max cast vol',err);
+							        return console.error('error toma totales',err);
 						        }else{
 						            total_vol_p3 = parseFloat(producto3)/100 - parseFloat(result.rows[0].max)/100; /*global producto3*/
 						            console.log(total_vol_p3);
@@ -426,7 +424,7 @@ function corte_manual(){
                     client.query(sprintf("SELECT SUM(CAST(dinero AS INT)),COUNT(dinero) FROM venta WHERE id>%1$s AND producto='%2$s'; ", last_id,idenproducto1), function(err,result){
 						done();
 						if(err){
-							return console.error('error sum cast',err);
+							return console.error('error toma totales',err);
 						}else{
 						    console.log("Primer producto");
 						    console.log('Cuenta'+result.rows[0].count);
@@ -445,7 +443,7 @@ function corte_manual(){
                     client.query(sprintf("SELECT SUM(CAST(dinero AS INT)),COUNT(dinero) FROM venta WHERE id>%1$s AND producto='%2$s'; ", last_id,idenproducto2), function(err,result){
                         done();
                         if(err){
-                            return console.error('error sum cast', err);
+                            return console.error('error toma totales', err);
                         }else{
                             console.log('Cuenta'+result.rows[0].count);
                             printport.write('Ventas '+n_producto2+':' + String(result.rows[0].count) + '\n'); 
@@ -464,7 +462,7 @@ function corte_manual(){
 					client.query(sprintf("SELECT SUM(CAST(dinero AS INT)),COUNT(dinero) FROM venta WHERE id>%1$s AND producto='%2$s'; ", last_id,idenproducto3), function(err,result){
                         done();
                         if(err){
-                            return console.error('error sum cast', err);
+                            return console.error('error toma totales', err);
                         }else{
                             console.log('Cuenta'+result.rows[0].count);
                             printport.write('Ventas '+n_producto3+':' + String(result.rows[0].count) + '\n'); 
@@ -489,16 +487,16 @@ function corte_manual(){
 					client.query("SELECT MAX(id) FROM venta;", function(err,result){
                                 done();
                                 if(err){
-                                    return console.error('error max id', err);
+                                    return console.error('error de conexion', err);
                                 }else{
                                     printport.write('\n\n\n\n\n\n');
                                     var last_id = result.rows[0].max;
-                                    //<!--inserta identificador de corte y ?ltimos totales>
+                                    //<!--inserta identificador de corte y últimos totales>
                                     client.query(sprintf("INSERT INTO cortem (ultima_venta,u_vol,u_vol_2,u_vol_3) VALUES ('%1$s','%2$s','%3$s','%4$s');",last_id,producto1,producto2,producto3), function(err,result){
                                         done();
                                         if(err){
                                             b_bd = 2;
-                                            return console.error('error insert', err); 
+                                            return console.error('error de conexion', err); 
                                         }
                                     });
                                 }                 
@@ -633,19 +631,19 @@ function rx_data_mux(data){
             break;   
             
             case '3':
-                printport.write('****** Copia ******\n'); /// impresi?n de copia de venta
+                printport.write('****** Copia ******\n'); /// impresión de copia de venta
                 print_venta();
             break;
             
            case '4':
 			id_p1 = 0;
 			id_p2 = 0;
-			id_p3 = 0;   //Opci?n de configuraci?n de productos
+			id_p3 = 0;   //Opción de configuración de productos
 			id_p4 = 0;
 			idenproducto1 = 0;
             idenproducto2 = 0;
             idenproducto3 = 0;
-                switch (caso2){         //Asignaci?n de nombres de productos y mangueras seg?n trama
+                switch (caso2){         //Asignación de nombres de productos y mangueras según trama
                     case 'D':
                         n_producto1 = 'Diesel';
                         id_p1 = 1;
@@ -927,9 +925,9 @@ function rx_data_mux(data){
                     muxport.write('1');
                     muxport.write(cara);
                     if(data[5] == '1'){
-                        console.log('\n\nEl Equipo no recibio la programacion.\nerror: 1.\n');            //No cambio el precio
+                        console.log('\n\nEl Equipo no recibio la programación.\nerror: 1.\n');            //No cambio el precio
                     }else if(data[5] == '2'){
-                        console.log('\n\nEl Equipo no recibio la programacion.\nerror: 2.\n');           //No recibio el preset
+                        console.log('\n\nEl Equipo no recibio la programación.\nerror: 2.\n');           //No recibio el preset
                     }
                     muxport.write('*'); 
                 }
@@ -963,7 +961,7 @@ function rest_auto(){
         
             console.log(jsonString);
         
-            var result = JSON.parse(jsonString);            //Respuesta autogas en autorizaci?n
+            var result = JSON.parse(jsonString);            //Respuesta autogas en autorización
         
             cantidadAutorizada  =  String(result.aT0001responseREST.cantidadAutorizada.value);
             codigoRetorno       =  result.aT0001responseREST.codigoRetorno.value;
@@ -1008,7 +1006,7 @@ function save_auto(){
                     done();
                     if(err){
                         b_bd = 1;
-                        return console.error('error insert autorizacion', err);
+                        return console.error('error insertar venta', err);
                     }else{
                         b_bd = 0;
                     }                 
@@ -1090,8 +1088,8 @@ function autorizaMux(){
 
         printport.write('\n\nERROR:\n ');//mod ayer
         switch(codigoRetorno){
-            case 0:                                     //C?digos de error de autogas para negar despacho
-               printport.write('\nEXITO\n'); 
+            case 0:                                     //Códigos de error de autogas para negar despacho
+               printport.write('\nÉXITO\n'); 
             break; 
             case 100:
                printport.write('\nEL SERIAL DEL VEHICULO  NO EXISTE\n'); 
@@ -1200,7 +1198,7 @@ function save_sale(){
                 done();
                 if(err){
                     b_bd = 2;
-                    return console.error('error max id venta', err);
+                    return console.error('error de conexion', err);
                 }else{
                     console.log(result.rows[0].max);
                     var last_id = result.rows[0].max;           //Cargo el maximo id de venta
@@ -1288,9 +1286,9 @@ function rest_sale(){
         error_local = '1';
         b_enviada = 'FALSE'; 
         if(imp =='0'){
-            printport.write('No se logro enviar al servidor\n\n'); //Informa que no se pudo subir venta a remoto
+            printport.write('No se logró enviar al servidor\n\n'); //Informa que no se pudo subir venta a remoto
             printport.write('*****VENTA ALMACENADA LOCAL*****\n\n');
-            save_sale();    /// Guarda venta cuando no hay conexi?n a servidor
+            save_sale();    /// Guarda venta cuando no hay conexión a servidor
             
         }
     });
@@ -1388,8 +1386,8 @@ function print_venta(){
         
 
         switch(codigoError){
-            case 0:                                         //C?digos de error enviados por Autogas
-               printport.write('\nEXITO\n'); 
+            case 0:                                         //Códigos de error enviados por Autogas
+               printport.write('\nÉXITO\n'); 
             break; 
             case 100:
                printport.write('\nEL SERIAL DEL VEHICULO  NO EXISTE\n'); 
@@ -1471,7 +1469,7 @@ function print_venta(){
                printport.write('\nDEL TANQUE DEL VEHICULO\n'); 
             break;             
         }
-        if(codigoError == '2002')  //Impresi?n de venta autorizada 
+        if(codigoError == '2002')  //Impresión de venta autorizada 
         {                          //Repetida en servidor
         imp ='0';   
         printport.write('CODIGO DE ERROR: ');
@@ -1553,7 +1551,7 @@ function print_venta(){
 function watchful(){
     console.log("Vigilando");
     var f = new Date();
-    if((f.getHours()=='11')&&(f.getMinutes()=='37')&&(corte_ok==0)){
+    if((f.getHours()=='14')&&(f.getMinutes()=='44')&&(corte_ok==0)){
         printport.write('MOMENTO DE CORTE\n');
         printport.write('REALICE CIERRE DE TURNO\n');
         printport.write('PARA INICIAR VENTA\n\n\n\n\n\n');              //A la hora programada se ejecuta la funcion para obligar a corte
@@ -1576,7 +1574,8 @@ function watchful(){
 *********************************************************************************************************
 */
 
-
+muxport.open(abrir);                    //Abre la comunicacion con el mux
+printport.open(abrir_print);            //Abre la comunicacion con el mux
 setInterval(watchful, 30000);           //Revisa el estado de las banderas
 
 

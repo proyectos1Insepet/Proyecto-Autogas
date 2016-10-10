@@ -1,4 +1,4 @@
---
+﻿--
 -- PostgreSQL database dump
 --
 
@@ -24,9 +24,6 @@ COMMENT ON EXTENSION plpgsql IS 'PL/pgSQL procedural language';
 
 SET search_path = public, pg_catalog;
 
-SET default_tablespace = '';
-
-SET default_with_oids = false;
 
 --
 -- Name: cortem; Type: TABLE; Schema: public; Owner: postgres; Tablespace: 
@@ -152,6 +149,56 @@ ALTER TABLE ONLY cortem ALTER COLUMN id SET DEFAULT nextval('cortem_id_seq'::reg
 --
 
 ALTER TABLE ONLY venta ALTER COLUMN id SET DEFAULT nextval('venta_id_seq'::regclass);
+
+
+--
+-- Data for Name: cortem; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY cortem (id, ultima_venta, u_vol, u_vol_2, u_vol_3) FROM stdin;
+1	0	000000000000	000000000000	000000000000
+\.
+
+
+--
+-- Name: cortem_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('cortem_id_seq', 21, true);
+
+
+--
+-- Data for Name: productos; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY productos (diesel, corriente, extra, s_diesel) FROM stdin;
+0	0	0	0
+\.
+
+
+--
+-- Data for Name: recibo; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY recibo (linea1, linea2, nit, tel, dir, footer, url, url_save) FROM stdin;
+GRUPO EDS AUTOGAS S.A.S	EDS AV CIUDAD DE QUITO	900.459.737-5	7567262	AV CIUDAD DE QUITO	GRACIAS POR SU COMPRA	http://190.85.166.35/ServicioGRPAliados/AT0001.svc	http://190.85.166.35/ServicioGRPAliados/CV0001.svc
+\.
+
+
+--
+-- Data for Name: venta; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY venta (autorizacion, id_venta, id_estacion, serial, km, cara, producto, precio, dinero, volumen, fecha, enviada, id) FROM stdin;
+0	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	f	1
+\.
+
+
+--
+-- Name: venta_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('venta_id_seq', 1, true);
 
 
 --
