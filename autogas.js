@@ -20,6 +20,7 @@ var ds              = require("xmldeserializer");
 var trycatch        = require('trycatch');
 var sprintf         = require("sprintf").sprintf;
 var rest_venta      = require("request");
+var rest_autorizar  = require("request");
 var sp              = require("serialport");
 var sp2             = require("serialport");
 var pg              = require('pg');
