@@ -110,20 +110,21 @@ var url_save;
 var ventaPendiente;
 var enviaRecuperada;
 var idVentaRecuperada;
+var vol_tabla;
 
 /********************Arreglos**************************************/            
-serial          = new Buffer(16);
-serialrec       = new Buffer(16);
-precio          = new Buffer(5);
-preciorec       = new Buffer(5);
+serial          = new Buffer(16); /*global serial*/
+serialrec       = new Buffer(16); /*global serialrec*/
+precio          = new Buffer(5); 
+preciorec       = new Buffer(5);  /*global preciorec*/
 preset          = new Buffer(7); /*global preset*/
 km              = new Buffer(7);
 idestacion      = new Buffer(4);
 autorizacion    = new Buffer(38);
 volumen         = new Buffer(7);
 dinero          = new Buffer(7);
-volumenrec      = new Buffer(7);
-dinerorec       = new Buffer(7);
+volumenrec      = new Buffer(7); /*global volumenrec*/
+dinerorec       = new Buffer(7); /*global dinerorec*/
 var id_venta        = new Buffer(7);
 var id_ventarec     = new Buffer(7);
 var producto1       = new Buffer(12);
@@ -502,82 +503,89 @@ function abrir_print(error){
 */
 function recuperacion(){
 	pg.connect(conString, function(err, client, done){
-		client.query(sprintf("SELECT MAX(CAST(tot1 AS INT)) FROM recuperacion where idpos = '%1$s';",String(cara)), function(err,result){
-			done();
-			if(err){				
-				return console.error('error de conexion', err);
-			}else{				
-			    total_vol_p1 = (parseFloat(producto1)/100 - parseFloat(result.rows[0].max)/100).toFixed(3); /*global producto1*/
-				console.log(total_vol_p1);
-				if (total_vol_p1 != 0){
-				    client.query(sprintf("UPDATE recuperacion SET tot1='%1$s' where idpos = '%2$s';",producto1,String(cara)), function(err,result){
-            			done();
-            			if(err){				
-            				return console.error('error de conexion', err);
-            			}else{
-            			    console.log("Inserta dato producto 1 para iniciar venta");
-            			    //ventaPendiente = 1;
-            			}					
-            		});
-				}
-				if (total_vol_p1 == 0){
-				    console.log("No hay venta para recuperar p1");
-				    ventaPendiente = 0;
-				}
-			}					
-		});
-		
-		client.query(sprintf("SELECT MAX(CAST(tot2 AS INT)) FROM recuperacion where idpos = '%1$s';",String(cara)), function(err,result){
-			done();
-			if(err){				
-				return console.error('error de conexion', err);
-			}else{				
-			    total_vol_p2 = (parseFloat(producto2)/100 - parseFloat(result.rows[0].max)/100).toFixed(3); /*global producto1*/
-				console.log(total_vol_p2);
-				if (total_vol_p2 != 0){
-				    client.query(sprintf("UPDATE recuperacion SET tot2='%1$s' where idpos = '%2$s';",producto2,String(cara)), function(err,result){
-            			done();
-            			if(err){				
-            				return console.error('error de conexion', err);
-            			}else{
-            			    console.log("Inserta dato para iniciar venta producto 2");
-            			    //ventaPendiente = 1;
-            			}					
-            		});
-				}
-				if (total_vol_p2 == 0){
-				    console.log("No hay venta para recuperar p2");
-				    ventaPendiente = 0;
-				}
-			}					
-		});
-		
-		client.query(sprintf("SELECT MAX(CAST(tot3 AS INT)) FROM recuperacion where idpos = '%1$s';",String(cara)), function(err,result){
-			done();
-			if(err){				
-				return console.error('error de conexion', err);
-			}else{				
-			    total_vol_p3 = (parseFloat(producto3)/100 - parseFloat(result.rows[0].max)/100).toFixed(3); /*global producto1*/
-				console.log(total_vol_p3);
-				if (total_vol_p3 != 0){
-				    client.query(sprintf("UPDATE recuperacion SET tot3='%1$s' where idpos = '%2$s';",producto3,String(cara)), function(err,result){
-            			done();
-            			if(err){				
-            				return console.error('error de conexion', err);
-            			}else{
-            			    console.log("Inserta dato producto 3 para iniciar venta");
-            			    //ventaPendiente = 1;
-            			}					
-            		});
-				}
-				if (total_vol_p3 == 0){
-				    console.log("No hay venta para recuperar p3");
-				    ventaPendiente = 0;
-				}
-			}					
-		});
-	    console.log("VentaPendiente: "+ventaPendiente);
-	});
+	    if(err){
+            b_bd = 1;
+            return console.error('error de conexion 1', err);
+         }else{
+    		client.query(sprintf("SELECT MAX(CAST(tot1 AS INT)) FROM recuperacion where idpos = '%1$s';",String(cara)), function(err,result){
+    			done();
+    			if(err){				
+    				return console.error('error de conexion', err);
+    			}else{				
+    			    total_vol_p1 = (parseFloat(producto1)/100 - parseFloat(result.rows[0].max)/100).toFixed(3); /*global producto1*/
+    				console.log(total_vol_p1);
+    				if (total_vol_p1 != 0){
+    				    client.query(sprintf("UPDATE recuperacion SET tot1='%1$s' where idpos = '%2$s';",producto1,String(cara)), function(err,result){
+                			done();
+                			if(err){				
+                				return console.error('error de conexion', err);
+                			}else{
+                			    console.log("Inserta dato producto 1 para iniciar venta");
+                			    //ventaPendiente = 1;
+                			}					
+                		});
+    				}
+    				if (total_vol_p1 == 0){
+    				    console.log("No hay venta para recuperar p1");
+    				    ventaPendiente = 0;
+    				}
+    			}					
+    		});
+    		
+    		client.query(sprintf("SELECT MAX(CAST(tot2 AS INT)) FROM recuperacion where idpos = '%1$s';",String(cara)), function(err,result){
+    			done();
+    			if(err){				
+    				return console.error('error de conexion', err);
+    			}else{				
+    			    total_vol_p2 = (parseFloat(producto2)/100 - parseFloat(result.rows[0].max)/100).toFixed(3); /*global producto1*/
+    				console.log(total_vol_p2);
+    				if (total_vol_p2 != 0){
+    				    client.query(sprintf("UPDATE recuperacion SET tot2='%1$s' where idpos = '%2$s';",producto2,String(cara)), function(err,result){
+                			done();
+                			if(err){				
+                				return console.error('error de conexion', err);
+                			}else{
+                			    console.log("Inserta dato para iniciar venta producto 2");
+                			    //ventaPendiente = 1;
+                			}					
+                		});
+    				}
+    				if (total_vol_p2 == 0){
+    				    console.log("No hay venta para recuperar p2");
+    				    ventaPendiente = 0;
+    				}
+    			}					
+    		});
+    		
+    		client.query(sprintf("SELECT MAX(CAST(tot3 AS INT)) FROM recuperacion where idpos = '%1$s';",String(cara)), function(err,result){
+    			done();
+    			if(err){				
+    				return console.error('error de conexion', err);
+    			}else{				
+    			    total_vol_p3 = (parseFloat(producto3)/100 - parseFloat(result.rows[0].max)/100).toFixed(3); /*global producto1*/
+    				console.log(total_vol_p3);
+    				if (total_vol_p3 != 0){
+    				    client.query(sprintf("UPDATE recuperacion SET tot3='%1$s' where idpos = '%2$s';",producto3,String(cara)), function(err,result){
+                			done();
+                			if(err){				
+                				return console.error('error de conexion', err);
+                			}else{
+                			    console.log("Inserta dato producto 3 para iniciar venta");
+                			    //ventaPendiente = 1;
+                			}					
+                		});
+    				}
+    				if (total_vol_p3 == 0){
+    				    console.log("No hay venta para recuperar p3");
+    				    ventaPendiente = 0;
+    				}
+    			}					
+    		});
+    	    
+    	    console.log("VentaPendiente: "+ventaPendiente);
+        }
+    });
+	
 	procesaRec();
 }
 /*
@@ -657,7 +665,7 @@ function procesaRec(){
                                         if (idenproducto1b == 3){
                                             vol_tabla = total_vol_p1;
                                         }
-                                        var dinero1 = parseFloat(result.rows[0].precio)*vol_tabla;
+                                        dinero1 = parseFloat(result.rows[0].precio)*vol_tabla;
                                         dinero1 = parseInt(dinero1, 10);
                                         console.log("Cara" + cara);
                                         client.query(sprintf("UPDATE venta SET (volumen,dinero,enviada,id_venta) = (%1$s,%2$s,%3$s,'%4$s') WHERE id='%5$s'",vol_tabla,dinero1,true,id_ventarec,last_id), function(err,result){
@@ -1350,7 +1358,7 @@ function rx_data_mux(data){
                         n_producto1b = 'Diesel';
                         id_p1b = 1;
                         idenproducto1b = 1;
-                        var grado = data[5];
+                        grado = data[5];
 						switch (grado){             
 							case '0':
 							n_producto2b = 'No Presente';
@@ -1780,7 +1788,7 @@ function autorizaMux(){
             precio = valorConvenio;
         }
         if(tipoConvenio == 3){                                  //Convenio: Descuento en %
-            valorConvenio = String(Math.round((parseInt(precio) * parseInt(valorConvenio)) / 100));
+            valorConvenio = String(Math.round((parseInt(precio,10) * parseInt(valorConvenio,10)) / 100));
             for(i=valorConvenio.length; i<=4; i++){
                 muxport.write('0');
                 console.log('0');
@@ -1921,7 +1929,7 @@ function save_sale(){
             return console.error('error conexion save_sale', err);
         }else{
             volumen[3]=46;
-             var vol_tabla = parseFloat(volumen);
+             vol_tabla = parseFloat(volumen);
             client.query("SELECT MAX(id) FROM venta;", function(err,result){        //consulto maximo id de venta
                 done();
                 if(err){
@@ -1938,7 +1946,6 @@ function save_sale(){
                        imp ='1';
                     }
                     console.log("Save sale>>"+id_venta);
-                    var n_id = idestacion + id_venta;
                     client.query(sprintf("UPDATE venta SET (id_venta, id_estacion, serial,  cara, producto, precio, dinero, volumen, fecha, enviada) = ('%1$s','%2$s', '%3$s', '%4$s', '%5$s', '%6$s', '%7$s', '%8$s', '%9$s','%10$s') WHERE id='%11$s'", id_venta, idestacion, serial, cara, idproducto, precio, dinero, vol_tabla, fecha, b_enviada,last_id), function(err,result){
                     
                         done();
