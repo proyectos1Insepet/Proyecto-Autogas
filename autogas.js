@@ -46,6 +46,7 @@ var corte_ok;
 var cantidadAutorizada;
 var codigoRetorno;
 var direccion;
+var telefono;
 var idproducto;
 var numeroAutorizacion;
 var retorno;
@@ -1023,6 +1024,9 @@ function rx_data_mux(data){
                     km[58-i] = data.charCodeAt(i); 
                 }  
                 console.log('Km: '+km); 
+                if(serial =='0000000000000000'){
+                    autorizacion = '00000000-0000-0000-0000-000000000000';
+                }
                 console.log('Id Autorizacion: '+autorizacion);
                 var f = new Date();
                 fecha = f.getDate() + "-" + (f.getMonth() +1) + "-" + f.getFullYear() + ' ' + f.getHours() + '_' + f.getMinutes();
@@ -1693,15 +1697,21 @@ function rest_auto(){
             cantidadAutorizada  =  String(result.aT0001responseREST.cantidadAutorizada.value);
             codigoRetorno       =  result.aT0001responseREST.codigoRetorno.value;
             direccion           =  result.aT0001responseREST.direccion.value;
+            telefono            =  result.aT0001responseREST.telefono.value;
             idproducto          =  result.aT0001responseREST.idproducto.value;
             numeroAutorizacion  =  result.aT0001responseREST.numeroAutorizacion.value;
+            nombreCuenta        =  result.aT0001responseREST.nombreCuenta.value;
             placa               =  result.aT0001responseREST.placa.value;  
             retorno             =  result.aT0001responseREST.retorno.value;
             tipoConvenio        =  result.aT0001responseREST.tipoConvenio.value;
             tipoRetorno         =  result.aT0001responseREST.tipoRetorno.value;
             trama               =  result.aT0001responseREST.trama.value;
             valorConvenio       =  String(result.aT0001responseREST.valorConvenio.value);
-            autorizacion        =  String(numeroAutorizacion);
+            if(serial !='0000000000000000'){
+                autorizacion =  String(numeroAutorizacion);
+            }else{
+                autorizacion = '00000000-0000-0000-0000-000000000000';
+            }
             autorizaMux();
             console.log(direccion);
             console.log(placa);
@@ -1778,7 +1788,7 @@ function autorizaMux(){
             console.log('F');
         }
         if(tipoConvenio == 2){                                  //Convenio: Descuento en pesos
-            valorConvenio = String(parseInt(precio) - parseInt(valorConvenio));
+            valorConvenio = String(parseInt(precio,10) - parseInt(valorConvenio,10));
             for(i=valorConvenio.length; i<=4; i++){
                 muxport.write('0');
                 console.log('0');
@@ -1807,7 +1817,7 @@ function autorizaMux(){
             precio = valorConvenio;
         }
         if(tipoRetorno==1){//si es dinero cambia el tipo de valor float a int///////////////////////////////////////////////////////////
-            cantidadAutorizada = parseInt(cantidadAutorizada);
+            cantidadAutorizada = parseInt(cantidadAutorizada,10);
         }
         cantidadAutorizada = String(cantidadAutorizada); //envia datos en string a la web
         for(i=cantidadAutorizada.length; i<=6; i++){
@@ -1998,7 +2008,7 @@ function rest_sale(){
             dineroSema         =  result2.cV0001responseREST.dineroSema.value;
             imprime_contadores =  String(result2.cV0001responseREST.imprimeContador.value);              
             imprime_saldo      =  String(result2.cV0001responseREST.imprimeSaldo.value);
-            nombreCuenta       =  result2.cV0001responseREST.nombreCuenta.value;
+            //nombreCuenta       =  result2.cV0001responseREST.nombreCuenta.value;
             placa              =  result2.cV0001responseREST.placa.value;
             retorno            =  result2.cV0001responseREST.retorno.value;
             saldo              =  String(result2.cV0001responseREST.saldo.value);
@@ -2096,7 +2106,7 @@ function rest_sale_rec(){
 							dineroSema         =  result2.cV0001responseREST.dineroSema.value;
 							imprime_contadores =  String(result2.cV0001responseREST.imprimeContador.value);              
 							imprime_saldo      =  String(result2.cV0001responseREST.imprimeSaldo.value);
-							nombreCuenta       =  result2.cV0001responseREST.nombreCuenta.value;
+							//nombreCuenta       =  result2.cV0001responseREST.nombreCuenta.value;
 							placa              =  result2.cV0001responseREST.placa.value;
 							retorno            =  result2.cV0001responseREST.retorno.value;
 							saldo              =  String(result2.cV0001responseREST.saldo.value);
@@ -2157,14 +2167,10 @@ function print_venta(){
         printport.write('      Tel: '+tel+'\n');
         printport.write('  '+dir+ '\n\n');
         
+        printport.write('Numero: ' +id_venta+ '\n\n');
+       
         var f = new Date();
-		printport.write('Fecha:' + String(f.getDate() + "-" + (f.getMonth() + 1) + "-" + f.getFullYear() + ' ' + f.getHours() + ':' + f.getMinutes()) + '\n\n');                                                      
-        /*printport.write('Fecha : '+fecha+'\n\n');*/
-        printport.write('Numero: ' +idestacion+id_venta+ '\n');
-        printport.write('Empresa:\n\n');
-        printport.write(String(nombreCuenta) + '\n');
-        printport.write('Serial:\n\n');
-        printport.write(serial + '\n\n');
+        printport.write('Fecha:' + String(f.getDate() + "-" + (f.getMonth() + 1) + "-" + f.getFullYear() + ' ' + f.getHours() + ':' + f.getMinutes()) + '\n\n');                                                      
         if(imprime_contadores == 1){         
             printport.write('Visitas: ' + visitasDia + 'd  ' + visitasSema + 's  ' + visitasMes + 'm  ' + '\n\n\n');
             printport.write('Volumen dia: G' + volDia +'\n');
@@ -2174,8 +2180,19 @@ function print_venta(){
             printport.write('Dinero sem:  $' + dineroSema +'\n');
             printport.write('Dinero mes:  $' + dineroMes +'\n\n'); 
         }
-        printport.write('Placa: ' + placa +'\n');
-        printport.write('Km   : ' + km +'\n');
+        if(serial !='0000000000000000'){
+            printport.write('Empresa:\n');
+            printport.write(String(nombreCuenta) + '\n');
+            printport.write('Direccion:\n');
+            printport.write(direccion+'\n');
+            printport.write('Telefono:\n');
+            printport.write(telefono+'\n');
+            printport.write('\n');
+            printport.write('Serial:\n');
+            printport.write(serial + '\n\n'); /*global serial*/
+            printport.write('Placa: ' + placa +'\n');
+            printport.write('Km   : ' + km +'\n');/*global km*/
+        }
         if(imprime_saldo == 1){        
             printport.write('Saldo: $' + saldo + '\n\n');
         }
@@ -2307,71 +2324,79 @@ function print_venta(){
                printport.write('\nDEL TANQUE DEL VEHICULO\n'); 
             break;             
         }
-        if(codigoError == '2002')  //Impresión de venta autorizada 
-        {                          //Repetida en servidor
-        imp ='0';   
-        printport.write('CODIGO DE ERROR: ');
-        printport.write(String(codigoError)); 
-        printport.write('\n');
-        printport.write('  VENTA YA ENVIADA A SERVIDOR \n\n');
-        printport.write('  '+linea1 +'\n');
-        printport.write('   '+linea2 +'\n');
-        printport.write('      '+nit+'\n');
-        printport.write('      Tel: '+tel+'\n');
-        printport.write('  '+dir+ '\n\n');
-        printport.write('Numero: ' +id_venta+ '\n'); /*global id_venta*/
-        f = new Date();
-		printport.write('Fecha:' + String(f.getDate() + "-" + (f.getMonth() + 1) + "-" + f.getFullYear() + ' ' + f.getHours() + ':' + f.getMinutes()) + '\n\n');                                                      
-        /*printport.write('Fecha : '+fecha+'\n\n');*/
-        printport.write('Serial:\n\n');
-        printport.write(serial + '\n\n'); /*global serial*/
-        codigoError = '0';
-        b_enviada = 'TRUE';
-        if(imprime_contadores == 1){         
-            printport.write('Visitas: ' + visitasDia + 'd  ' + visitasSema + 's  ' + visitasMes + 'm  ' + '\n\n\n');
-            printport.write('Volumen dia: G' + volDia +'\n');
-            printport.write('Volumen sem: G' + volSema +'\n');
-            printport.write('Volumen mes: G' + volMes +'\n\n');
-            printport.write('Dinero dia:  $' + dineroDia +'\n');
-            printport.write('Dinero sem:  $' + dineroSema +'\n');
-            printport.write('Dinero mes:  $' + dineroMes +'\n\n'); 
-        }
-        printport.write('Km   : ' + km +'\n');/*global km*/
-        if(imprime_saldo == 1){        
-            printport.write('Saldo: $' + saldo + '\n\n');
-        }
-        printport.write('Posicion: ' + cara + '\n'); /*global cara*/
-        printport.write('Producto: ');
-        switch(idproducto){
-            case '1':
-               printport.write('Diesel\n'); 
-            break;
-            
-            case '2':
-               printport.write('Corriente\n'); 
-            break; 
-            
-            case '3':
-               printport.write('Extra\n'); 
-            break; 
-            
-            case '4':
-               printport.write('Supreme Diesel\n'); 
-            break;                 
-        }
-        precio1 = parseFloat(precio);/*global precio*/
-        printport.write('PPU     : $' + String(precio1) + '\n');
-        volumen[3]=46;
-        volumen1 = parseFloat(volumen); /*global volumen*/
-        printport.write('Volumen : G' + volumen1 + '\n');
-        dinero1 = parseFloat(dinero); /*global dinero*/
-        printport.write('Dinero  : $' + String(dinero1) + '\n\n\n');
-        printport.write('Firma :'+ '\n\n');
-        printport.write('       --------------------'+ '\n\n');
-        printport.write('Cedula:' + '\n');
-        printport.write('       --------------------'+ '\n\n');
-        printport.write(footer+ '\n');
-        printport.write('\n\n\n\n\n\n\n'); 
+        if(codigoError == '2002'){ //Impresión de venta autorizada 
+            imp ='0';  //Repetida en servidor 
+            printport.write('CODIGO DE ERROR: ');
+            printport.write(String(codigoError)); 
+            printport.write('\n');
+            printport.write('  VENTA YA ENVIADA A SERVIDOR \n\n');
+            printport.write('  '+linea1 +'\n');
+            printport.write('   '+linea2 +'\n');
+            printport.write('      '+nit+'\n');
+            printport.write('      Tel: '+tel+'\n');
+            printport.write('  '+dir+ '\n\n');
+            printport.write('Numero: ' +id_venta+ '\n\n');
+            f = new Date();
+            printport.write('Fecha:' + String(f.getDate() + "-" + (f.getMonth() + 1) + "-" + f.getFullYear() + ' ' + f.getHours() + ':' + f.getMinutes()) + '\n\n');                                                      
+            codigoError = '0';
+            b_enviada = 'TRUE';
+            if(imprime_contadores == 1){         
+                printport.write('Visitas: ' + visitasDia + 'd  ' + visitasSema + 's  ' + visitasMes + 'm  ' + '\n\n\n');
+                printport.write('Volumen dia: G' + volDia +'\n');
+                printport.write('Volumen sem: G' + volSema +'\n');
+                printport.write('Volumen mes: G' + volMes +'\n\n');
+                printport.write('Dinero dia:  $' + dineroDia +'\n');
+                printport.write('Dinero sem:  $' + dineroSema +'\n');
+                printport.write('Dinero mes:  $' + dineroMes +'\n\n'); 
+            }
+            if(serial !='0000000000000000'){
+                printport.write('Empresa:\n');
+                printport.write(String(nombreCuenta) + '\n');
+                printport.write('Direccion:\n');
+                printport.write(direccion+'\n');
+                printport.write('Telefono:\n');
+                printport.write(telefono+'\n');
+                printport.write('\n');
+                printport.write('Serial:\n');
+                printport.write(serial + '\n\n'); /*global serial*/
+                printport.write('Placa: ' + placa +'\n');
+                printport.write('Km   : ' + km +'\n');/*global km*/
+            }
+            if(imprime_saldo == 1){        
+                printport.write('Saldo: $' + saldo + '\n\n');
+            }
+            printport.write('Posicion: ' + cara + '\n'); /*global cara*/
+            printport.write('Producto: ');
+            switch(idproducto){
+                case '1':
+                   printport.write('Diesel\n'); 
+                break;
+                
+                case '2':
+                   printport.write('Corriente\n'); 
+                break; 
+                
+                case '3':
+                   printport.write('Extra\n'); 
+                break; 
+                
+                case '4':
+                   printport.write('Supreme Diesel\n'); 
+                break;                 
+            }
+            precio1 = parseFloat(precio);/*global precio*/
+            printport.write('PPU     : $' + String(precio1) + '\n');
+            volumen[3]=46;
+            volumen1 = parseFloat(volumen); /*global volumen*/
+            printport.write('Volumen : G' + volumen1 + '\n');
+            dinero1 = parseFloat(dinero); /*global dinero*/
+            printport.write('Dinero  : $' + String(dinero1) + '\n\n\n');
+            printport.write('Firma :'+ '\n\n');
+            printport.write('       --------------------'+ '\n\n');
+            printport.write('Cedula:' + '\n');
+            printport.write('       --------------------'+ '\n\n');
+            printport.write(footer+ '\n');
+            printport.write('\n\n\n\n\n\n\n'); 
         }
         //mod ayer
     } 
