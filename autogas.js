@@ -57,6 +57,7 @@ var valorConvenio;
 var fecha;
 var error_local;
 var imp;
+var printrec;
 /**************Variables para la venta*****************************/
 var codigoError;
 var dineroDia;
@@ -112,6 +113,8 @@ var ventaPendiente;
 var enviaRecuperada;
 var idVentaRecuperada;
 var vol_tabla;
+var recuperaProducto;
+var subeInternet;
 
 /********************Arreglos**************************************/            
 serial          = new Buffer(16); /*global serial*/
@@ -507,87 +510,97 @@ function recuperacion(){
 	    if(err){
             b_bd = 1;
             return console.error('error de conexion 1', err);
-         }else{
-    		client.query(sprintf("SELECT MAX(CAST(tot1 AS INT)) FROM recuperacion where idpos = '%1$s';",String(cara)), function(err,result){
-    			done();
-    			if(err){				
-    				return console.error('error de conexion', err);
-    			}else{				
-    			    total_vol_p1 = (parseFloat(producto1)/100 - parseFloat(result.rows[0].max)/100).toFixed(3); /*global producto1*/
-    				console.log(total_vol_p1);
-    				if (total_vol_p1 != 0){
-    				    client.query(sprintf("UPDATE recuperacion SET tot1='%1$s' where idpos = '%2$s';",producto1,String(cara)), function(err,result){
+         }else{ 
+            client.query("SELECT enviada FROM venta where id = (SELECT MAX(id) FROM venta);", function(err,result){
+                    done();
+                    if(err){
+                        return console.error('error seleccion MAX venta', err);
+                    }else{ 
+                        subeInternet = result.rows[0].enviada;
+                        console.log("Internet>>" + subeInternet);
+                        
+                		client.query(sprintf("SELECT MAX(CAST(tot1 AS INT)) FROM recuperacion where idpos = '%1$s';",String(cara)), function(err,result){
                 			done();
                 			if(err){				
                 				return console.error('error de conexion', err);
-                			}else{
-                			    console.log("Inserta dato producto 1 para iniciar venta");
-                			    //ventaPendiente = 1;
+                			}else{				
+                			    total_vol_p1 = (parseFloat(producto1)/100 - parseFloat(result.rows[0].max)/100).toFixed(3); /*global producto1*/
+                				console.log(total_vol_p1);
+                				if (total_vol_p1 != 0){
+                				    client.query(sprintf("UPDATE recuperacion SET tot1='%1$s' where idpos = '%2$s';",producto1,String(cara)), function(err,result){
+                            			done();
+                            			if(err){				
+                            				return console.error('error de conexion', err);
+                            			}else{
+                            			    console.log("Inserta dato producto 1 para iniciar venta");
+                            			    recuperaProducto = 1;
+                            			}					
+                            		});
+                				}
+                				if (total_vol_p1 == 0){
+                				    console.log("No hay venta para recuperar p1");
+                				    ventaPendiente = 0;
+                				}
                 			}					
                 		});
-    				}
-    				if (total_vol_p1 == 0){
-    				    console.log("No hay venta para recuperar p1");
-    				    ventaPendiente = 0;
-    				}
-    			}					
-    		});
-    		
-    		client.query(sprintf("SELECT MAX(CAST(tot2 AS INT)) FROM recuperacion where idpos = '%1$s';",String(cara)), function(err,result){
-    			done();
-    			if(err){				
-    				return console.error('error de conexion', err);
-    			}else{				
-    			    total_vol_p2 = (parseFloat(producto2)/100 - parseFloat(result.rows[0].max)/100).toFixed(3); /*global producto1*/
-    				console.log(total_vol_p2);
-    				if (total_vol_p2 != 0){
-    				    client.query(sprintf("UPDATE recuperacion SET tot2='%1$s' where idpos = '%2$s';",producto2,String(cara)), function(err,result){
+                		
+                		client.query(sprintf("SELECT MAX(CAST(tot2 AS INT)) FROM recuperacion where idpos = '%1$s';",String(cara)), function(err,result){
                 			done();
                 			if(err){				
                 				return console.error('error de conexion', err);
-                			}else{
-                			    console.log("Inserta dato para iniciar venta producto 2");
-                			    //ventaPendiente = 1;
+                			}else{				
+                			    total_vol_p2 = (parseFloat(producto2)/100 - parseFloat(result.rows[0].max)/100).toFixed(3); /*global producto1*/
+                				console.log(total_vol_p2);
+                				if (total_vol_p2 != 0){
+                				    client.query(sprintf("UPDATE recuperacion SET tot2='%1$s' where idpos = '%2$s';",producto2,String(cara)), function(err,result){
+                            			done();
+                            			if(err){				
+                            				return console.error('error de conexion', err);
+                            			}else{
+                            			    console.log("Inserta dato para iniciar venta producto 2");
+                            			    recuperaProducto = 2;
+                            			}					
+                            		});
+                				}
+                				if (total_vol_p2 == 0){
+                				    console.log("No hay venta para recuperar p2");
+                				    ventaPendiente = 0;
+                				}
                 			}					
                 		});
-    				}
-    				if (total_vol_p2 == 0){
-    				    console.log("No hay venta para recuperar p2");
-    				    ventaPendiente = 0;
-    				}
-    			}					
-    		});
-    		
-    		client.query(sprintf("SELECT MAX(CAST(tot3 AS INT)) FROM recuperacion where idpos = '%1$s';",String(cara)), function(err,result){
-    			done();
-    			if(err){				
-    				return console.error('error de conexion', err);
-    			}else{				
-    			    total_vol_p3 = (parseFloat(producto3)/100 - parseFloat(result.rows[0].max)/100).toFixed(3); /*global producto1*/
-    				console.log(total_vol_p3);
-    				if (total_vol_p3 != 0){
-    				    client.query(sprintf("UPDATE recuperacion SET tot3='%1$s' where idpos = '%2$s';",producto3,String(cara)), function(err,result){
+                		
+                		client.query(sprintf("SELECT MAX(CAST(tot3 AS INT)) FROM recuperacion where idpos = '%1$s';",String(cara)), function(err,result){
                 			done();
                 			if(err){				
                 				return console.error('error de conexion', err);
-                			}else{
-                			    console.log("Inserta dato producto 3 para iniciar venta");
-                			    //ventaPendiente = 1;
+                			}else{				
+                			    total_vol_p3 = (parseFloat(producto3)/100 - parseFloat(result.rows[0].max)/100).toFixed(3); /*global producto1*/
+                				console.log(total_vol_p3);
+                				if (total_vol_p3 != 0){
+                				    client.query(sprintf("UPDATE recuperacion SET tot3='%1$s' where idpos = '%2$s';",producto3,String(cara)), function(err,result){
+                            			done();
+                            			if(err){				
+                            				return console.error('error de conexion', err);
+                            			}else{
+                            			    console.log("Inserta dato producto 3 para iniciar venta");
+                            			    recuperaProducto = 3;
+                            			}					
+                            		});
+                				}
+                				if (total_vol_p3 == 0){
+                				    console.log("No hay venta para recuperar p3");
+                				    ventaPendiente = 0;
+                				}
                 			}					
                 		});
-    				}
-    				if (total_vol_p3 == 0){
-    				    console.log("No hay venta para recuperar p3");
-    				    ventaPendiente = 0;
-    				}
-    			}					
-    		});
-    	    
-    	    console.log("VentaPendiente: "+ventaPendiente);
-        }
+                	    
+                	    console.log("VentaPendiente: "+ventaPendiente);
+        
+                    }
+            });
+             
+         }
     });
-	
-	procesaRec();
 }
 /*
 *********************************************************************************************************
@@ -608,7 +621,8 @@ function procesaRec(){
                     if(err){
                         return console.error('error seleccion MAX venta', err);
                     }else{
-                        
+                        var last_id = result.rows[0].max;
+                        idVentaRecuperada = last_id;
                         client.query(sprintf("SELECT id_venta from venta where id = (select max(id) from venta where enviada = true and id_venta !='NaN');"), function(err,result){
                             done();
                             if(err){
@@ -617,8 +631,7 @@ function procesaRec(){
                                 id_ventarec = '1'+String(result.rows[0].id_venta); 
                             }
                         });
-                        var last_id = result.rows[0].max;
-                        idVentaRecuperada = last_id;
+                        
                        
                         client.query(sprintf("SELECT enviada, cara, producto,precio FROM venta WHERE id ='%1$s';",last_id), function(err,result){
                             done();
@@ -632,13 +645,13 @@ function procesaRec(){
                                     console.log(total_vol_p2);
                                     console.log(total_vol_p3);
                                     if(result.rows[0].cara  == '1'){
-                                        if (idenproducto1 == 1){
+                                        if (recuperaProducto == 1){
                                             vol_tabla = total_vol_p1;
                                         }
-                                        if (idenproducto1 == 2){
+                                        if (recuperaProducto == 2){
                                             vol_tabla = total_vol_p2;
                                         }
-                                        if (idenproducto1 == 3){
+                                        if (recuperaProducto == 3){
                                             vol_tabla = total_vol_p1;
                                         }
                                         console.log(vol_tabla);
@@ -657,13 +670,13 @@ function procesaRec(){
                                     }
                                     
                                     if(result.rows[0].cara  == '2'){
-                                        if (idenproducto1b == 1){
+                                        if (recuperaProducto == 1){
                                             vol_tabla = total_vol_p1;
                                         }
-                                        if (idenproducto1b == 2){
+                                        if (recuperaProducto == 2){
                                             vol_tabla = total_vol_p2;
                                         }
-                                        if (idenproducto1b == 3){
+                                        if (recuperaProducto == 3){
                                             vol_tabla = total_vol_p1;
                                         }
                                         dinero1 = parseFloat(result.rows[0].precio)*vol_tabla;
@@ -677,10 +690,7 @@ function procesaRec(){
                                                 rest_sale_rec();
                                             }
                                         });
-                                        
                                     }
-                                    
-                                    
                                 }
                             }
                         });
@@ -1661,12 +1671,29 @@ function rx_data_mux(data){
                 }  
                 console.log('Producto 3: '+producto3);
                 recuperacion();
+                procesaRec();
+                enviaInternet();
                 console.log('OK'); 
             break; 
         }
     }
     
 }
+/*
+*********************************************************************************************************
+*                                function rest_auto()
+*
+* Description : LLama el servicio Web para pedir la autorizacion de una venta
+*               
+*********************************************************************************************************
+*/
+
+function enviaInternet(){
+    if(subeInternet == false && ventaPendiente == 0){
+        rest_sale_rec();
+    }
+}
+
 
 
 /*
@@ -1745,7 +1772,7 @@ function save_auto(){
             }else{
                 var f = new Date();
                 fecha = f.getDate() + "-" + (f.getMonth() +1) + "-" + f.getFullYear() + ' ' + f.getHours() + '_' + f.getMinutes();
-                client.query(sprintf("INSERT INTO venta (autorizacion, precio, placa, direccion, cara, producto, idestacion,serial,fecha,km) VALUES ('%1$s','%2$s','%3$s','%4$s','%5$s','%6$s','%7$s','%8$s','%9$s','%10$s');",autorizacion, precio, placa, direccion,cara , idproducto, idestacion,serial,fecha,km), function(err,result){
+                client.query(sprintf("INSERT INTO venta (autorizacion, precio, placa, direccion, cara, producto, idestacion,serial,fecha,km,nombrecuenta,telefono) VALUES ('%1$s','%2$s','%3$s','%4$s','%5$s','%6$s','%7$s','%8$s','%9$s','%10$s','%11$s','%12$s');",autorizacion, precio, placa, direccion,cara , idproducto, idestacion,serial,fecha,km,nombreCuenta,telefono), function(err,result){
                     done();
                     if(err){
                         b_bd = 1;
@@ -1939,7 +1966,7 @@ function save_sale(){
             return console.error('error conexion save_sale', err);
         }else{
             volumen[3]=46;
-             vol_tabla = parseFloat(volumen);
+            vol_tabla = parseFloat(volumen);
             client.query("SELECT MAX(id) FROM venta;", function(err,result){        //consulto maximo id de venta
                 done();
                 if(err){
@@ -1961,9 +1988,11 @@ function save_sale(){
                         done();
                         if(err){
                             b_bd = 2;
+                            printrec = 0;
                             print_venta(); //Imprime venta sin insertar en la DB
                             return console.error('error actualizacion save_sale', err); 
                         }else{
+                            printrec = 0;
                             print_venta(); //Imprime venta insertada en la DB
                             b_bd = 0;
                         }
@@ -1973,6 +2002,58 @@ function save_sale(){
         }
     }); 
 }
+
+
+/*
+*********************************************************************************************************
+*                                function save_sale_rec()
+*
+* Description : Guarda la venta en la base de datos
+*               
+*********************************************************************************************************
+*/
+function save_sale_rec(){
+    pg.connect(conString, function(err, client, done){                  //conectar a la base de datos
+        if(err){
+            return console.error('error conexion save_sale', err);
+        }else{
+            vol_tabla = volumenrec;
+            client.query("SELECT MAX(id) FROM venta;", function(err,result){        //consulto maximo id de venta
+                done();
+                if(err){
+                    b_bd = 2;
+                    return console.error('error toma MAX save_sale', err);
+                }else{
+                    console.log(result.rows[0].max);
+                    var last_id = result.rows[0].max;           //Cargo el maximo id de venta
+                    if(codigoError == '0' && error_local=='0'){ //Cargar dato de si fue enviada o no la venta
+                        b_enviada = 'TRUE';
+                        imp='0';
+                    }else{
+                       b_enviada = 'FALSE';
+                       imp ='1';
+                    }
+                    console.log("Save sale>>"+id_ventarec);
+                    client.query(sprintf("UPDATE venta SET (id_venta, id_estacion, serial,  cara, producto, precio, dinero, volumen, fecha, enviada) = ('%1$s','%2$s', '%3$s', '%4$s', '%5$s', '%6$s', '%7$s', '%8$s', '%9$s','%10$s') WHERE id='%11$s'", id_ventarec, idestacion, serialrec, cara, idproducto, preciorec, dinerorec, vol_tabla, fecha, b_enviada,last_id), function(err,result){
+                    
+                        done();
+                        if(err){
+                            b_bd = 2;
+                            printrec  = 1;
+                            print_venta(); //Imprime venta sin insertar en la DB
+                            return console.error('error actualizacion save_sale', err); 
+                        }else{
+                            printrec = 1;
+                            print_venta(); //Imprime venta insertada en la DB
+                            b_bd = 0;
+                        }
+                    });
+                }                 
+            });  
+        }
+    }); 
+}
+
 
 /*
 *********************************************************************************************************
@@ -2053,7 +2134,7 @@ function rest_sale_rec(){
         }else{
             console.log(enviaRecuperada);
 			
-			    client.query(sprintf("SELECT cara, producto, volumen, dinero, precio, idestacion, serial, autorizacion, id_venta,fecha FROM venta  WHERE id='%1$s'", idVentaRecuperada), function(err,result){
+			    client.query(sprintf("SELECT cara, producto, volumen, dinero, precio, idestacion, serial,km, autorizacion, id_venta,fecha,nombrecuenta,direccion,telefono FROM venta  WHERE id='%1$s'", idVentaRecuperada), function(err,result){
 				done();
 				if(err){
 					return console.error('error de envio recuperada', err); 
@@ -2061,19 +2142,18 @@ function rest_sale_rec(){
 					cara         = result.rows[0].cara;
 					idproducto   = result.rows[0].producto;
 					volumenrec   = result.rows[0].volumen;
-					console.log("Volumen (.)>> "+ volumenrec);
 					volumenrec   = volumenrec.replace('.', ',');
 					dinerorec    = result.rows[0].dinero;
 					preciorec    = result.rows[0].precio;
 					idestacion   = result.rows[0].idestacion;
 					serialrec    = result.rows[0].serial;
+					km           = result.rows[0].km;
 					autorizacion = result.rows[0].autorizacion;	
 					fecha        = result.rows[0].fecha;
-					serial       = serialrec;
-					volumen      = volumenrec;
-					dinero       = dinerorec;
-					precio       = preciorec;
-					id_venta     = id_ventarec;
+					nombreCuenta = result.rows[0].nombrecuenta;
+					direccion    = result.rows[0].direccion;
+					telefono     = result.rows[0].telefono;
+
 					console.log("Venta recuperada: ");
 					console.log("Cara>> "+ cara);
 					console.log("Producto>> "+ idproducto);
@@ -2085,6 +2165,9 @@ function rest_sale_rec(){
 					console.log("Autorizacion>> "+ autorizacion);
 					console.log("ID Venta>> "+ id_ventarec);
 					console.log("Fecha>> "+ fecha);
+					console.log("Cuenta>> "+ nombreCuenta);
+					console.log("Direccion>> "+ direccion);
+					console.log("Telefono>> "+ telefono);
 					trycatch(function() {
 						var opt_rest_venta = {				
 						url: sprintf(url_save+"/rest/UploadSale/%1$s/%2$s/%3$s/%4$s/%5$s/%6$s/%7$s/%8$s/%9$s/%10$s/%11$s/%12$s", cara, idproducto, volumenrec, dinerorec, preciorec, idestacion, serialrec, autorizacion, id_ventarec, 0, fecha, fecha), /*global autorizacion*//*global idestacion*/
@@ -2120,7 +2203,7 @@ function rest_sale_rec(){
 							console.log("Termina post");
 							//b_enviada = 'TRUE';
 							error_local = '0';
-							save_sale();
+							save_sale_rec();
 						});
 					}, function(err) {
 						console.log(err.stack);
@@ -2130,7 +2213,7 @@ function rest_sale_rec(){
 						if(imp =='0'){
 							printport.write('No se logró enviar al servidor\n\n'); //Informa que no se pudo subir venta a remoto
 							printport.write('*****VENTA ALMACENADA LOCAL*****\n\n');
-							save_sale();    /// Guarda venta cuando no hay conexión a servidor
+							save_sale_rec();    /// Guarda venta cuando no hay conexión a servidor
 							
 						}
 					});
@@ -2166,9 +2249,12 @@ function print_venta(){
         printport.write('      '+nit+'\n');
         printport.write('      Tel: '+tel+'\n');
         printport.write('  '+dir+ '\n\n');
-        
-        printport.write('Numero: ' +id_venta+ '\n\n');
-       
+        if(printrec == 0){
+            printport.write('Numero: ' +id_venta+ '\n\n');
+        }
+        if(printrec == 1){
+            printport.write('Numero: ' +id_ventarec+ '\n\n');
+        }
         var f = new Date();
         printport.write('Fecha:' + String(f.getDate() + "-" + (f.getMonth() + 1) + "-" + f.getFullYear() + ' ' + f.getHours() + ':' + f.getMinutes()) + '\n\n');                                                      
         if(imprime_contadores == 1){         
@@ -2189,7 +2275,11 @@ function print_venta(){
             printport.write(telefono+'\n');
             printport.write('\n');
             printport.write('Serial:\n');
-            printport.write(serial + '\n\n'); /*global serial*/
+            if(printrec == 0){
+                printport.write(serial + '\n\n'); /*global serial*/    
+            }else{
+                printport.write(serialrec + '\n\n'); /*global serial*/
+            }
             printport.write('Placa: ' + placa +'\n');
             printport.write('Km   : ' + km +'\n');/*global km*/
         }
@@ -2215,12 +2305,22 @@ function print_venta(){
                printport.write('Supreme Diesel\n'); 
             break;                 
         }
-        var precio1 = parseFloat(precio);
+        var precio1;
+        var dinero1;
+        
+        if(printrec == 0){
+            precio1 = parseFloat(precio);
+            volumen[3]=46;
+            var volumen1 = parseFloat(volumen);
+            printport.write('Volumen : G' + volumen1 + '\n');
+            dinero1 = parseFloat(dinero);
+        }
+        if(printrec == 1){
+            precio1 = parseFloat(preciorec);
+            printport.write('Volumen : G' + vol_tabla + '\n');
+            dinero1 = parseFloat(dinerorec);
+        }
         printport.write('PPU     : $' + String(precio1) + '\n');
-        volumen[3]=46;
-        var volumen1 = parseFloat(volumen);
-        printport.write('Volumen : G' + volumen1 + '\n');
-        var dinero1 = parseFloat(dinero);
         printport.write('Dinero  : $' + String(dinero1) + '\n\n\n');
         printport.write('Firma :'+ '\n\n');
         printport.write('       --------------------'+ '\n\n');
@@ -2361,10 +2461,11 @@ function print_venta(){
                 printport.write(serial + '\n\n'); /*global serial*/
                 printport.write('Placa: ' + placa +'\n');
                 printport.write('Km   : ' + km +'\n');/*global km*/
+                if(imprime_saldo == 1){        
+                    printport.write('Saldo: $' + saldo + '\n\n');
+                }
             }
-            if(imprime_saldo == 1){        
-                printport.write('Saldo: $' + saldo + '\n\n');
-            }
+            
             printport.write('Posicion: ' + cara + '\n'); /*global cara*/
             printport.write('Producto: ');
             switch(idproducto){
