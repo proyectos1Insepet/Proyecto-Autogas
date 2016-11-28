@@ -115,6 +115,7 @@ var idVentaRecuperada;
 var vol_tabla;
 var recuperaProducto;
 var subeInternet;
+var dineroRecuperado;
 
 /********************Arreglos**************************************/            
 serial          = new Buffer(16); /*global serial*/
@@ -508,7 +509,6 @@ function abrir_print(error){
 function recuperacion(){
 	pg.connect(conString, function(err, client, done){
 	    if(err){
-            b_bd = 1;
             return console.error('error de conexion 1', err);
          }else{ 
             client.query("SELECT enviada FROM venta where id = (SELECT MAX(id) FROM venta);", function(err,result){
@@ -534,6 +534,9 @@ function recuperacion(){
                             			}else{
                             			    console.log("Inserta dato producto 1 para iniciar venta");
                             			    recuperaProducto = 1;
+                            			    ventaPendiente = 1;
+                            			    console.log("# Producto "+recuperaProducto);
+	                                        procesaRec();
                             			}					
                             		});
                 				}
@@ -559,6 +562,9 @@ function recuperacion(){
                             			}else{
                             			    console.log("Inserta dato para iniciar venta producto 2");
                             			    recuperaProducto = 2;
+                            			    ventaPendiente = 1;
+                            			    console.log("# Producto "+recuperaProducto);
+	                                        procesaRec();
                             			}					
                             		});
                 				}
@@ -584,6 +590,9 @@ function recuperacion(){
                             			}else{
                             			    console.log("Inserta dato producto 3 para iniciar venta");
                             			    recuperaProducto = 3;
+                            			    ventaPendiente = 1;
+                            			    console.log("# Producto "+recuperaProducto);
+	                                        procesaRec();
                             			}					
                             		});
                 				}
@@ -600,7 +609,7 @@ function recuperacion(){
             });
              
          }
-    });
+	});
 }
 /*
 *********************************************************************************************************
@@ -654,11 +663,16 @@ function procesaRec(){
                                         if (recuperaProducto == 3){
                                             vol_tabla = total_vol_p1;
                                         }
+                                        if (recuperaProducto!=1 && recuperaProducto!=2 && recuperaProducto!=3){
+                                            vol_tabla = 0;
+                                        }
                                         console.log(vol_tabla);
-                                        var dinero1 = parseFloat(result.rows[0].precio)*vol_tabla;
-                                        dinero1 = parseInt(dinero1, 10);
+                                        dineroRecuperado = parseFloat(result.rows[0].precio)*vol_tabla;
+                                        console.log("Venta FLOAT: "+dineroRecuperado );
+                                        dineroRecuperado = parseInt(dineroRecuperado, 10);
+                                        console.log("Venta Recuperada: "+dineroRecuperado );
                                         console.log("Cara" + cara);
-                                        client.query(sprintf("UPDATE venta SET (volumen,dinero,enviada) = (%1$s,%2$s,%3$s) WHERE id='%4$s'",vol_tabla,dinero1,true,last_id), function(err,result){
+                                        client.query(sprintf("UPDATE venta SET (volumen,dinero,enviada) = (%1$s,%2$s,%3$s) WHERE id='%4$s'",vol_tabla,dineroRecuperado,true,last_id), function(err,result){
                                             done();
                                             if(err){
                                                 return console.error('error actualizacion venta recuperada', err); 
@@ -679,10 +693,13 @@ function procesaRec(){
                                         if (recuperaProducto == 3){
                                             vol_tabla = total_vol_p1;
                                         }
-                                        dinero1 = parseFloat(result.rows[0].precio)*vol_tabla;
-                                        dinero1 = parseInt(dinero1, 10);
+                                        if (recuperaProducto!=1 && recuperaProducto!=2 && recuperaProducto!=3){
+                                            vol_tabla = 0;
+                                        }
+                                        dineroRecuperado = parseFloat(result.rows[0].precio)*vol_tabla;
+                                        dineroRecuperado = parseInt(dineroRecuperado, 10);
                                         console.log("Cara" + cara);
-                                        client.query(sprintf("UPDATE venta SET (volumen,dinero,enviada,id_venta) = (%1$s,%2$s,%3$s,'%4$s') WHERE id='%5$s'",vol_tabla,dinero1,true,id_ventarec,last_id), function(err,result){
+                                        client.query(sprintf("UPDATE venta SET (volumen,dinero,enviada,id_venta) = (%1$s,%2$s,%3$s,'%4$s') WHERE id='%5$s'",vol_tabla,dineroRecuperado,true,id_ventarec,last_id), function(err,result){
                                             done();
                                             if(err){
                                                 return console.error('error actualizacion venta recuperada', err); 
@@ -1046,7 +1063,8 @@ function rx_data_mux(data){
                 var b = sprintf(url_save+"/rest/UploadSale/%1$s/%2$s/%3$s/%4$s/%5$s/%6$s/%7$s/%8$s/%9$s/%10$s/%11$s/%12$s", cara, idproducto, volumen, dinero, precio, idestacion, serial, autorizacion, n_id, km, fecha, fecha);
                 console.log('>>'+b);
                 console.log(n_id);
-                rest_sale();                
+                rest_sale();    
+                
             break;
             
             case '2':                                                           //Caso corte manual
@@ -1671,8 +1689,7 @@ function rx_data_mux(data){
                 }  
                 console.log('Producto 3: '+producto3);
                 recuperacion();
-                procesaRec();
-                enviaInternet();
+                //enviaInternet();
                 console.log('OK'); 
             break; 
         }
@@ -1688,11 +1705,6 @@ function rx_data_mux(data){
 *********************************************************************************************************
 */
 
-function enviaInternet(){
-    if(subeInternet == false && ventaPendiente == 0){
-        rest_sale_rec();
-    }
-}
 
 
 
