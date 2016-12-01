@@ -110,6 +110,7 @@ var nit;
 var tel;
 var dir;
 var footer;
+var idestacionefectivo;
 var url_auto;
 var url_save;
 var ventaPendiente;
@@ -127,7 +128,7 @@ var contador;
 var saveEfectivo;
 var insertado;
 /********************Arreglos**************************************/            
-serial          = new Buffer(16); /*global serial*/
+
 serialrec       = new Buffer(16); /*global serialrec*/
 precio          = new Buffer(5); 
 preciorec       = new Buffer(5);  /*global preciorec*/
@@ -138,6 +139,7 @@ volumen         = new Buffer(7);
 dinero          = new Buffer(7);
 volumenrec      = new Buffer(7); /*global volumenrec*/
 dinerorec       = new Buffer(7); /*global dinerorec*/
+var serial          = new Buffer(16); /*global serial*/
 var autorizacion= new Buffer(38);
 var autorizaefec= new Buffer(38);
 var id_venta        = new Buffer(7);
@@ -173,7 +175,7 @@ function reinicio(error){
              return console.error('error de conexion 1', err);
          }else{
              
-              client.query("SELECT linea1, linea2, nit, tel, dir, footer, url, url_save FROM recibo;", function(err,result){
+              client.query("SELECT linea1, linea2, nit, tel, dir, footer, idestacion, url, url_save FROM recibo;", function(err,result){
                     done();
                     if(err){
                         b_bd = 2;
@@ -185,6 +187,7 @@ function reinicio(error){
                     tel = result.rows[0].tel;
                     dir = result.rows[0].dir;
                     footer = result.rows[0].footer;
+                    idestacionefectivo = result.rows[0].idestacion;
                     url_auto = result.rows[0].url;
                     url_save = result.rows[0].url_save;
                     }
@@ -2185,15 +2188,17 @@ function save_sale(){
                        b_enviada = 'FALSE';
                     }
                     console.log("Save sale>>"+id_venta);
-                    client.query(sprintf("UPDATE venta SET (id_venta, id_estacion, serial,  cara, producto, precio, dinero, volumen, fecha, enviada) = ('%1$s','%2$s', '%3$s', '%4$s', '%5$s', '%6$s', '%7$s', '%8$s', '%9$s','%10$s') WHERE id= (SELECT MAX(id) FROM venta WHERE cara = '%4$s');", id_venta, idestacion, serial, cara, idproducto, precio, dinero, vol_tabla, fecha, b_enviada,last_id), function(err,result){
+                    client.query(sprintf("UPDATE venta SET (id_venta, id_estacion, serial,  cara, producto, precio, dinero, volumen, fecha, enviada) = ('%1$s','%2$s', '%3$s', '%4$s', '%5$s', '%6$s', '%7$s', '%8$s', '%9$s','%10$s') WHERE id= (SELECT MAX(id) FROM venta WHERE cara = '%4$s');",id_venta, idestacion, serial, cara, idproducto, precio, dinero, vol_tabla, fecha, b_enviada,last_id), function(err,result){
                         done();
                         if(err){
                             b_bd = 2;
                             printrec = 0;
                             if(cara == '1'){
+                                imp = 0;
                                 print_venta(); //Imprime venta sin insertar en la DB
                             }
                             if(cara == '2'){
+                                imp2 = 0;
                                 print_ventaSeg(); //Imprime venta sin insertar en la DB
                             }
                             return console.error('error actualizacion save_sale', err); 
@@ -2230,17 +2235,18 @@ function save_sale_ef(){
         }else{
             volumen[3]=46;
             vol_tabla = parseFloat(volumen);
-            
             console.log("Insertado: "+ insertado);
-            client.query(sprintf("INSERT INTO venta  (id_venta, id_estacion, serial,  cara, producto, precio, dinero, volumen, fecha, enviada) VALUES ('%1$s','%2$s', '%3$s', '%4$s', '%5$s', '%6$s', '%7$s', '%8$s', '%9$s','%10$s')", id_venta, idestacion, serial, cara, idproducto, precio, dinero, vol_tabla, fecha,b_enviada), function(err,result){
+            client.query(sprintf("INSERT INTO venta  (id_venta, idestacion, serial,  cara, producto, precio, dinero, volumen, fecha, enviada,autorizacion,km) VALUES ('%1$s','%2$s', '%3$s', '%4$s', '%5$s', '%6$s', '%7$s', '%8$s', '%9$s','%10$s','%11$s','%12$s')", id_venta, idestacion, serial, cara, idproducto, precio, dinero, vol_tabla, fecha,b_enviada,'00000000-0000-0000-0000-000000000000',0), function(err,result){
                 done();
                 if(err){
                     b_bd = 2;
                     printrec = 0;
                     if(cara == '1'){
+                        imp = 0;
                         print_venta(); //Imprime venta sin insertar en la DB
                     }
                     if(cara == '2'){
+                        imp2 = 0;
                         print_ventaSeg(); //Imprime venta sin insertar en la DB
                     }
                     return console.error('error actualizacion save_sale', err); 
@@ -2248,9 +2254,11 @@ function save_sale_ef(){
                     console.log("Save sale efectivo>>"+id_venta);
                     printrec = 0;
                     if(cara == '1'){
+                        imp = 0;
                         print_venta(); //Imprime venta sin insertar en la DB
                     }
                     if(cara == '2'){
+                        imp = 0;
                         print_ventaSeg(); //Imprime venta sin insertar en la DB
                     }
                     b_bd = 0;
@@ -2301,18 +2309,22 @@ function save_sale_rec(){
                             b_bd = 2;
                             printrec  = 1;
                             if(cara == '1'){
+                                imp = 0;
                                 print_venta(); //Imprime venta sin insertar en la DB
                             }
                             if(cara == '2'){
+                                imp2 = 0;
                                 print_ventaSeg(); //Imprime venta sin insertar en la DB
                             }
                             return console.error('error actualizacion save_sale', err); 
                         }else{
                             printrec = 1;
                             if(cara == '1'){
+                                imp = 0;
                                 print_venta(); //Imprime venta sin insertar en la DB
                             }
                             if(cara == '2'){
+                                imp2 = 0;
                                 print_ventaSeg(); //Imprime venta sin insertar en la DB
                             }
                             b_bd = 0;
@@ -2545,6 +2557,9 @@ function print_venta(){
             }
             if(printrec == 1){
                 printport.write('Numero: ' +id_ventarec+ '\n\n');
+            }
+            if(printrec == 3){
+                printport.write('Numero: ' +id_venta+ '\n\n');
             }
             var f = new Date();
             printport.write('Fecha:' + String(f.getDate() + "-" + (f.getMonth() + 1) + "-" + f.getFullYear() + ' ' + f.getHours() + ':' + f.getMinutes()) + '\n\n');                                                      
@@ -2832,6 +2847,9 @@ function print_ventaSeg(){
             if(printrec == 1){
                 printport.write('Numero: ' +id_ventarec+ '\n\n');
             }
+            if(printrec == 3){
+                printport.write('Numero: ' +id_venta+ '\n\n');
+            }
             var f = new Date();
             printport.write('Fecha:' + String(f.getDate() + "-" + (f.getMonth() + 1) + "-" + f.getFullYear() + ' ' + f.getHours() + ':' + f.getMinutes()) + '\n\n');                                                      
             if(imprime_contadores == 1){         
@@ -3117,23 +3135,52 @@ function actualAuto(){
 *********************************************************************************************************
 */
 function enviaInternet(){
+    actualAuto();
     pg.connect(conString, function(err, client, done){                  //conectar a la base de datos
         if(err){
             return console.error('error conexion save_sale', err);
         }else{
-            client.query("SELECT enviada,volumen, cara FROM venta where id = (SELECT MAX(id) FROM venta) AND cara = '1';", function(err,result){
+            client.query("SELECT producto,volumen, dinero, precio, idestacion,serial,autorizacion,id_venta,km,fecha, enviada,nombrecuenta,direccion,telefono FROM venta where id = (SELECT MAX(id) FROM venta WHERE cara = '1');", function(err,result){
 	            done();
 	            if(err){
 		        return console.error('error seleccion MAX venta', err);
 	            }else{
-	                
 		            subeInternet = result.rows[0].enviada;
 		            console.log("Internet>>" + subeInternet);
 		            if (subeInternet){
 		                console.log("No hay que subir venta");
 		            }else{
 		                if(result.rows[0].volumen != null){
-		                    volumen[3]=44;
+		                    cara         = '1';
+					        idproducto   = result.rows[0].producto;
+					        volumenrec   = result.rows[0].volumen;
+					        volumen      = volumenrec.replace('.', ',');
+					        dinero       = result.rows[0].dinero;
+					        precio       = result.rows[0].precio;
+					        idestacion   = result.rows[0].idestacion;
+					        serial       = result.rows[0].serial;
+					        km           = result.rows[0].km;
+					        autorizacion = result.rows[0].autorizacion;	
+					        fecha        = result.rows[0].fecha;
+					        nombreCuenta = result.rows[0].nombrecuenta;
+					        direccion    = result.rows[0].direccion;
+					        telefono     = result.rows[0].telefono;
+					        id_venta     = result.rows[0].id_venta;
+                            printrec     = 2;
+					        console.log("Venta recuperada Internet: ");
+        					console.log("Cara>> "+ cara);
+        					console.log("Producto>> "+ idproducto);
+        					console.log("Volumen>> "+ volumen);
+        					console.log("Dinero>> "+ dinero);
+        					console.log("Precio>> "+ precio);
+        					console.log("ID Estacion>> "+ idestacion);
+        					console.log("Serial>> "+ serial);
+        					console.log("Autorizacion>> "+ autorizacion);
+        					console.log("ID Venta>> "+ id_venta);
+        					console.log("Fecha>> "+ fecha);
+        					console.log("Cuenta>> "+ nombreCuenta);
+        					console.log("Direccion>> "+ direccion);
+        					console.log("Telefono>> "+ telefono);
 		                    console.log("Venta por subir cara 1");
                             imp =1;
                             rest_sale();   
@@ -3158,20 +3205,48 @@ function enviaInternetSeg(){
         if(err){
             return console.error('error conexion save_sale', err);
         }else{
-            client.query("SELECT enviada,volumen, cara FROM venta where id = (SELECT MAX(id) FROM venta) AND cara = '2';", function(err,result){
+            client.query("SELECT producto,volumen, dinero, precio, idestacion,serial,autorizacion,id_venta,km,fecha,nombrecuenta,direccion,telefono, enviada FROM venta where id = (SELECT MAX(id) FROM venta WHERE cara = '2') ;", function(err,result){
 	            done();
 	            if(err){
 		        return console.error('error seleccion MAX venta', err);
 	            }else{
-	                
 		            subeInternet2 = result.rows[0].enviada;
-		            console.log("Internet>>" + subeInternet2);
+		            console.log("Internet2>>" + subeInternet2);
 		            if (subeInternet2){
 		                console.log("No hay que subir venta");
 		            }else{
 		                if(result.rows[0].volumen != null){
-		                    volumen[3]=44;
-		                    console.log("Venta por subir cara2");
+		                    cara         = '2';
+		                    idproducto   = result.rows[0].producto;
+					        volumenrec   = result.rows[0].volumen;
+					        volumen      = volumenrec.replace('.', ',');
+					        dinero       = result.rows[0].dinero;
+					        precio       = result.rows[0].precio;
+					        idestacion   = result.rows[0].idestacion;
+					        serial       = result.rows[0].serial;
+					        km           = result.rows[0].km;
+					        autorizacion= result.rows[0].autorizacion;	
+					        fecha        = result.rows[0].fecha;
+					        nombreCuenta = result.rows[0].nombrecuenta;
+					        direccion    = result.rows[0].direccion;
+					        telefono     = result.rows[0].telefono;
+					        id_venta     = result.rows[0].id_venta;
+                            printrec     = 2;
+					        console.log("Venta recuperada Internet 2: ");
+        					console.log("Cara>> "+ cara);
+        					console.log("Producto>> "+ idproducto);
+        					console.log("Volumen>> "+ volumen);
+        					console.log("Dinero>> "+ dinero);
+        					console.log("Precio>> "+ precio);
+        					console.log("ID Estacion>> "+ idestacion);
+        					console.log("Serial>> "+ serial);
+        					console.log("Autorizacion>> "+ autorizacion);
+        					console.log("ID Venta>> "+ id_venta);
+        					console.log("Fecha>> "+ fecha);
+        					console.log("Cuenta>> "+ nombreCuenta);
+        					console.log("Direccion>> "+ direccion);
+        					console.log("Telefono>> "+ telefono);
+		                    console.log("Venta por subir cara 2");
                             imp2 =1;
                             rest_sale();   
 		                }
@@ -3181,12 +3256,6 @@ function enviaInternetSeg(){
         }
     }); 
 }
-
-
-
-
-
-
 
 
 /*
@@ -3225,7 +3294,7 @@ function watchful(){
 muxport.open(abrir);                    //Abre la comunicacion con el mux
 printport.open(abrir_print);            //Abre la comunicacion con el mux
 setInterval(watchful, 30000);           //Revisa el estado de las banderas
-setInterval(actualAuto,3000);
+setInterval(actualAuto,10000);
 
 
 
