@@ -1237,7 +1237,6 @@ function rx_data_mux(data){
                 }
                 console.log('>>'+b);
                 console.log(n_id);
-                actualAuto();
                 rest_sale();    
             break;
             
@@ -1961,6 +1960,7 @@ function rest_auto(){
         muxport.write('*');
         printport.write('\n\nLos datos no se lograron\nenviar al servidor.\n\n\n\n\n\n\n');
     });
+    
 }
 /*
 *********************************************************************************************************
