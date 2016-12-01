@@ -194,13 +194,13 @@ function reinicio(error){
               });
              
              
-                client.query(sprintf("SELECT enviada FROM venta WHERE id = (SELECT MAX(id) FROM venta WHERE cara ='1')"), function(err,result){
+                client.query(sprintf("SELECT enviada, volumen FROM venta WHERE id = (SELECT MAX(id) FROM venta WHERE cara ='1')"), function(err,result){
                 	done();
                 	if(err){
                 	 return console.error('error seleccionar ultima venta', err);
                 	}else{
                 	    console.log(result.rows[0].enviada);
-                		if (result.rows[0].enviada == false){
+                		if (result.rows[0].enviada == false || result.rows[0].volumen == null){
                 			printport.write('VENTA INCOMPLETA CARA 1\n');
                 			printport.write('REALICE CIERRE DE TURNO\n');
                 			printport.write('PARA INICIAR VENTA\n\n\n\n\n\n\n\n\n');
@@ -213,12 +213,12 @@ function reinicio(error){
                 	}
                 });
                 
-                client.query(sprintf("SELECT enviada FROM venta WHERE id = (SELECT MAX(id) FROM venta WHERE cara ='2')"), function(err,result){
+                client.query(sprintf("SELECT enviada, volumen FROM venta WHERE id = (SELECT MAX(id) FROM venta WHERE cara ='2')"), function(err,result){
             	done();
             	if(err){
             	 return console.error('error seleccionar ultima venta', err);
             	}else{
-            	    console.log(result.rows[0].enviada);
+            	    console.log(result.rows[0].enviada || result.rows[0].volumen == null);
             		if (result.rows[0].enviada == false){
             			printport.write('VENTA INCOMPLETA CARA 2\n');
             			printport.write('REALICE CIERRE DE TURNO\n');
@@ -1237,7 +1237,7 @@ function rx_data_mux(data){
                 }
                 console.log('>>'+b);
                 console.log(n_id);
-                //actualAuto();
+                actualAuto();
                 rest_sale();    
             break;
             
