@@ -2538,7 +2538,7 @@ function print_venta(){
     console.log("IMPRIMIENDO");
     console.log(codigoError);
     if(imp == 0){
-        imp =1;        
+                
         if(codigoError == '0'){
             muxport.write('BBB');
             muxport.write('E');
@@ -2809,6 +2809,7 @@ function print_venta(){
             //mod ayer
     } 
         console.log("FIN IMPRIMIENDO");
+        imp =1;
     }
 }
 
@@ -2824,10 +2825,9 @@ function print_venta(){
 */
 
 function print_ventaSeg(){
-    console.log("IMPRIMIENDO");
+    console.log("IMPRIMIENDO 2");
     console.log(codigoError);
     if(imp2 == 0){
-        imp2 =1;
         if(codigoError == '0'){
             muxport.write('BBB');
             muxport.write('E');
@@ -3098,6 +3098,7 @@ function print_ventaSeg(){
             //mod ayer
         } 
         console.log("FIN IMPRIMIENDO");
+        imp2 =1;
     }
     
 }
@@ -3135,7 +3136,6 @@ function actualAuto(){
 *********************************************************************************************************
 */
 function enviaInternet(){
-    actualAuto();
     pg.connect(conString, function(err, client, done){                  //conectar a la base de datos
         if(err){
             return console.error('error conexion save_sale', err);
@@ -3146,6 +3146,7 @@ function enviaInternet(){
 		        return console.error('error seleccion MAX venta', err);
 	            }else{
 		            subeInternet = result.rows[0].enviada;
+		            imp =0;
 		            console.log("Internet>>" + subeInternet);
 		            if (subeInternet){
 		                console.log("No hay que subir venta");
@@ -3211,6 +3212,7 @@ function enviaInternetSeg(){
 		        return console.error('error seleccion MAX venta', err);
 	            }else{
 		            subeInternet2 = result.rows[0].enviada;
+		            imp2 =1;
 		            console.log("Internet2>>" + subeInternet2);
 		            if (subeInternet2){
 		                console.log("No hay que subir venta");
@@ -3294,7 +3296,7 @@ function watchful(){
 muxport.open(abrir);                    //Abre la comunicacion con el mux
 printport.open(abrir_print);            //Abre la comunicacion con el mux
 setInterval(watchful, 30000);           //Revisa el estado de las banderas
-setInterval(actualAuto,10000);
+setInterval(actualAuto,5000);
 
 
 
