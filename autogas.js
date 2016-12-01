@@ -57,6 +57,8 @@ var valorConvenio;
 var fecha;
 var error_local;
 var imp;
+var imp2;
+var SinImpresion;
 var printrec;
 /**************Variables para la venta*****************************/
 var codigoError;
@@ -118,6 +120,7 @@ var vol_tabla;
 var recuperaProducto;
 var recuperaProducto2;
 var subeInternet;
+var subeInternet2;
 var dineroRecuperado;
 var enable_count;
 var contador;
@@ -162,6 +165,8 @@ function reinicio(error){
        console.log(error);
      }else{
          permite = 0;
+         imp  = 0;
+         imp2 = 0;
          pg.connect(conString, function(err, client, done){
          if(err){
              b_bd = 1;
@@ -1157,7 +1162,6 @@ function rx_data_mux(data){
                 console.log('Km: '+km);                 
                 cara = data[45];
                 console.log('Cara: '+cara);
-                
                 if(permite == 0 || permite2 == 0){
                     muxport.write('BBB');           //En caso de venta incompleta
                     muxport.write('E');             // No permite autorizar
@@ -2177,24 +2181,31 @@ function save_sale(){
                     var last_id = result.rows[0].max;           //Cargo el maximo id de venta
                     if(codigoError == '0' && error_local=='0'){ //Cargar dato de si fue enviada o no la venta
                         b_enviada = 'TRUE';
-                        imp='0';
                     }else{
                        b_enviada = 'FALSE';
-                       imp ='1';
                     }
                     console.log("Save sale>>"+id_venta);
                     client.query(sprintf("UPDATE venta SET (id_venta, id_estacion, serial,  cara, producto, precio, dinero, volumen, fecha, enviada) = ('%1$s','%2$s', '%3$s', '%4$s', '%5$s', '%6$s', '%7$s', '%8$s', '%9$s','%10$s') WHERE id= (SELECT MAX(id) FROM venta WHERE cara = '%4$s');", id_venta, idestacion, serial, cara, idproducto, precio, dinero, vol_tabla, fecha, b_enviada,last_id), function(err,result){
-                    
                         done();
                         if(err){
                             b_bd = 2;
                             printrec = 0;
-                            print_venta(); //Imprime venta sin insertar en la DB
+                            if(cara == '1'){
+                                print_venta(); //Imprime venta sin insertar en la DB
+                            }
+                            if(cara == '2'){
+                                print_ventaSeg(); //Imprime venta sin insertar en la DB
+                            }
                             return console.error('error actualizacion save_sale', err); 
                         }else{
                             printrec = 0;
-                            print_venta(); //Imprime venta insertada en la DB
                             b_bd = 0;
+                            if(cara == '1'){
+                                print_venta(); //Imprime venta sin insertar en la DB
+                            }
+                            if(cara == '2'){
+                                print_ventaSeg(); //Imprime venta sin insertar en la DB
+                            }
                         }
                     });
                 }                 
@@ -2226,12 +2237,22 @@ function save_sale_ef(){
                 if(err){
                     b_bd = 2;
                     printrec = 0;
-                    print_venta(); //Imprime venta sin insertar en la DB
+                    if(cara == '1'){
+                        print_venta(); //Imprime venta sin insertar en la DB
+                    }
+                    if(cara == '2'){
+                        print_ventaSeg(); //Imprime venta sin insertar en la DB
+                    }
                     return console.error('error actualizacion save_sale', err); 
                 }else{
                     console.log("Save sale efectivo>>"+id_venta);
                     printrec = 0;
-                    print_venta(); //Imprime venta insertada en la DB
+                    if(cara == '1'){
+                        print_venta(); //Imprime venta sin insertar en la DB
+                    }
+                    if(cara == '2'){
+                        print_ventaSeg(); //Imprime venta sin insertar en la DB
+                    }
                     b_bd = 0;
                 }
             });
@@ -2279,11 +2300,21 @@ function save_sale_rec(){
                         if(err){
                             b_bd = 2;
                             printrec  = 1;
-                            print_venta(); //Imprime venta sin insertar en la DB
+                            if(cara == '1'){
+                                print_venta(); //Imprime venta sin insertar en la DB
+                            }
+                            if(cara == '2'){
+                                print_ventaSeg(); //Imprime venta sin insertar en la DB
+                            }
                             return console.error('error actualizacion save_sale', err); 
                         }else{
                             printrec = 1;
-                            print_venta(); //Imprime venta insertada en la DB
+                            if(cara == '1'){
+                                print_venta(); //Imprime venta sin insertar en la DB
+                            }
+                            if(cara == '2'){
+                                print_ventaSeg(); //Imprime venta sin insertar en la DB
+                            }
                             b_bd = 0;
                         }
                     });
@@ -2337,7 +2368,12 @@ function rest_sale(){
             volDia             =  String(result2.cV0001responseREST.volDia.value);
             volMes             =  String(result2.cV0001responseREST.volMes.value);
             volSema            =  String(result2.cV0001responseREST.volSema.value);
-            
+            if(cara =='1'){
+                imp =0;
+            }
+            if(cara =='2'){
+                imp2 =0;
+            }
             console.log("Termina post");
             b_enviada = 'TRUE';
             error_local = '0';
@@ -2347,16 +2383,22 @@ function rest_sale(){
             if(serial != '0000000000000000' ){
                 save_sale();
             }
-            
         });
     }, function(err) {
         console.log(err.stack);
         console.log("Termina post con error");
         error_local = '1';
         b_enviada = 'FALSE'; 
-        printport.write('No se logro enviar al servidor\n\n'); //Informa que no se pudo subir venta a remoto
-        printport.write('*****VENTA ALMACENADA LOCAL*****\n');
-        printport.write('****SIN CONEXION A INTERNET*****\n');
+        if(cara =='1' && imp ==0){
+            printport.write('No se logro enviar al servidor\n\n'); //Informa que no se pudo subir venta a remoto
+            printport.write('*****VENTA ALMACENADA LOCAL*****\n');
+            printport.write('****SIN CONEXION A INTERNET*****\n');
+        }
+        if(cara =='2' && imp2 ==0){
+            printport.write('No se logro enviar al servidor\n\n'); //Informa que no se pudo subir venta a remoto
+            printport.write('*****VENTA ALMACENADA LOCAL*****\n');
+            printport.write('****SIN CONEXION A INTERNET*****\n');
+        }
         if(serial =='0000000000000000'){
             save_sale_ef();    
         }
@@ -2483,211 +2525,29 @@ function rest_sale_rec(){
 function print_venta(){
     console.log("IMPRIMIENDO");
     console.log(codigoError);
-    if(codigoError == '0'){
-        muxport.write('BBB');
-        muxport.write('E');
-        muxport.write(String(cara));
-        muxport.write('2');                         //Gracias por su compra
-        muxport.write('*');        
-        console.log("RECIBO");
-        console.log('\n\n');
-        printport.write('  '+linea1 +'\n');
-        printport.write('   '+linea2 +'\n');
-        printport.write('      '+nit+'\n');
-        printport.write('      Tel: '+tel+'\n');
-        printport.write('  '+dir+ '\n\n');
-        if(printrec == 0){
-            printport.write('Numero: ' +parseInt(idestacion+id_venta,10)+ '\n\n');
-        }
-        if(printrec == 1){
-            printport.write('Numero: ' +id_ventarec+ '\n\n');
-        }
-        var f = new Date();
-        printport.write('Fecha:' + String(f.getDate() + "-" + (f.getMonth() + 1) + "-" + f.getFullYear() + ' ' + f.getHours() + ':' + f.getMinutes()) + '\n\n');                                                      
-        if(imprime_contadores == 1){         
-            printport.write('Visitas: ' + visitasDia + 'd  ' + visitasSema + 's  ' + visitasMes + 'm  ' + '\n\n\n');
-            printport.write('Volumen dia: G' + volDia +'\n');
-            printport.write('Volumen sem: G' + volSema +'\n');
-            printport.write('Volumen mes: G' + volMes +'\n\n');
-            printport.write('Dinero dia:  $' + dineroDia +'\n');
-            printport.write('Dinero sem:  $' + dineroSema +'\n');
-            printport.write('Dinero mes:  $' + dineroMes +'\n\n'); 
-        }
-        if(serial !='0000000000000000'){
-            printport.write('Empresa:\n');
-            printport.write(String(nombreCuenta) + '\n');
-            printport.write('Direccion:\n');
-            printport.write(direccion+'\n');
-            printport.write('Telefono:\n');
-            printport.write(telefono+'\n');
-            printport.write('\n');
-            printport.write('Serial:\n');
-            if(printrec == 0){
-                printport.write(serial + '\n\n'); /*global serial*/    
-            }else{
-                printport.write(serialrec + '\n\n'); /*global serial*/
-            }
-            printport.write('Placa: ' + placa +'\n');
-            printport.write('Km   : ' + km +'\n');/*global km*/
-            if(imprime_saldo == 1){        
-                printport.write('Saldo: $' + saldo + '\n\n');
-            }
-        }
-        
-        printport.write('Posicion: ' + cara + '\n');
-        printport.write('Producto: ');
-        switch(idproducto){
-            case '1':
-               printport.write('Diesel\n'); 
-            break;
-            
-            case '2':
-               printport.write('Corriente\n'); 
-            break; 
-            
-            case '3':
-               printport.write('Extra\n'); 
-            break; 
-            
-            case '4':
-               printport.write('Supreme Diesel\n'); 
-            break;                 
-        }
-        var precio1;
-        var dinero1;
-        
-        if(printrec == 0){
-            precio1 = parseFloat(precio);
-            volumen[3]=46;
-            var volumen1 = parseFloat(volumen);
-            printport.write('Volumen : G' + volumen1 + '\n');
-            dinero1 = parseFloat(dinero);
-        }
-        if(printrec == 1){
-            precio1 = parseFloat(preciorec);
-            printport.write('Volumen : G' + vol_tabla + '\n');
-            dinero1 = parseFloat(dinerorec);
-        }
-        printport.write('PPU     : $' + String(precio1) + '\n');
-        printport.write('Dinero  : $' + String(dinero1) + '\n\n\n');
-        printport.write('Firma :'+ '\n\n');
-        printport.write('       --------------------'+ '\n\n');
-        printport.write('Cedula:' + '\n');
-        printport.write('       --------------------'+ '\n\n');
-        printport.write(footer+ '\n');
-        printport.write('\n\n\n\n\n\n\n');   
-    }
-    else{
-        muxport.write('BBB');
-        muxport.write('E');
-        muxport.write(String(cara));
-        muxport.write('3');                         //Error de Operacion
-        muxport.write('*');        
-        //printport.write('\n\nERROR: \n');
-        
-        
-        
-
-        switch(codigoError){
-            case 0:                                         //Códigos de error enviados por Autogas
-               printport.write('\nÉXITO\n'); 
-            break; 
-            case 100:
-               printport.write('\nEL SERIAL DEL VEHICULO  NO EXISTE\n'); 
-            break; 
-            case 200:
-               printport.write('\nPARAMETROS DE ENTRADA\n'); 
-               printport.write('\nINCORRECTOS\n');                
-            break; 
-            case 300:
-               printport.write('\nERROR DESCONOCIDO\n'); 
-            break; 
-            case 400:
-               printport.write('\nCUENTA SIN CUPO\n'); 
-            break; 
-            case 501:
-               printport.write('\nVEHICULO NO TIENE VOLUMEN AL DIA\n'); 
-            break; 
-            case 502:
-               printport.write('\nVEHICULO NO TIENE VOLUMEN A LA\n'); 
-               printport.write('\nSEMANA\n');               
-            break; 
-            case 503:
-               printport.write('\nVEHICULO NO TIENE VOLUMEN AL\n'); 
-               printport.write('\nMES\n');                
-            break; 
-            case 601:
-               printport.write('\nVEHICULO NO TIENE VISITAS AL DIA\n'); 
-            break; 
-            case 602:
-               printport.write('\nVEHICULO NO TIENE VISITAS A LA\n'); 
-               printport.write('\nSEMANA\n');               
-            break; 
-            case 603:
-               printport.write('\nVEHICULO NO TIENE VISITAS AL MES\n'); 
-            break; 
-            case 701:
-               printport.write('\nVEHICULO NO TIENE DINERO AL DIA\n'); 
-            break; 
-            case 702:
-               printport.write('\nVEHICULO NO TIENE DINERO A LA\n'); 
-               printport.write('\nSEMANA\n');                
-            break; 
-            case 703:
-               printport.write('\nVEHICULO NO TIENE DINERO AL MES\n'); 
-            break; 
-            case 801:
-               printport.write('\nVEHICULO NO PUEDE TANQUEAR EN\n'); 
-               printport.write('\nESTA HORA\n'); 
-            break; 
-            case 901:
-               printport.write('\nVEHICULO NO PUEDE TANQUEAR EN \n');
-               printport.write('\nESTA EDS\n'); 
-            break; 
-            case 1001:
-               printport.write('\nVEHICULO NO PUEDE TANQUEAR EL\n'); 
-               printport.write('\nPRODUCTO SELECCIONADO\n');                
-            break; 
-            case 1101:
-               printport.write('\nLA CUENTA SE ENCUENTRA EN\n'); 
-               printport.write('\nESTADO BLOQUEADO\n');                
-            break; 
-            case 1102:
-               printport.write('\nLA CUENTA  SE ENCUENTRA  EN UNA\n'); 
-               printport.write('\nFECHA VENCIDA\n');                
-            break; 
-            case 1201:
-               printport.write('\nEL VEHICULO SE ENCUENTRA EN\n'); 
-               printport.write('\nESTADO BLOQUEADO\n'); 
-            break; 
-            case 1302:
-               printport.write('\nLA EDS NO ES VALIDA\n'); 
-            break; 
-            case 1401:
-               printport.write('\nEL KILOMETRAJE INGRESADO ES\n'); 
-               printport.write('\nINFERIOR AL ULTIMO INGRESADO\n');                
-            break; 
-            case 1501:
-               printport.write('\nEL VOLUMEN SUPERA LA CAPACIDAD\n'); 
-               printport.write('\nDEL TANQUE DEL VEHICULO\n'); 
-            break;             
-        }
-        
-        if(codigoError == '2002'|| codigoError ==undefined || codigoError == 200){ //Impresión de venta autorizada 
-            imp ='0';  //Repetida en servidor 
-            //printport.write('CODIGO DE ERROR: ');
-            //printport.write(String(codigoError)); 
-            printport.write('\n\n\n\n\n');
+    if(imp == 0){
+        imp =1;        
+        if(codigoError == '0'){
+            muxport.write('BBB');
+            muxport.write('E');
+            muxport.write(String(cara));
+            muxport.write('2');                         //Gracias por su compra
+            muxport.write('*');        
+            console.log("RECIBO");
+            console.log('\n\n');
             printport.write('  '+linea1 +'\n');
             printport.write('   '+linea2 +'\n');
             printport.write('      '+nit+'\n');
             printport.write('      Tel: '+tel+'\n');
             printport.write('  '+dir+ '\n\n');
-            printport.write('Numero: ' +parseInt(idestacion+id_venta,10)+ '\n\n');
-            f = new Date();
+            if(printrec == 0){
+                printport.write('Numero: ' +parseInt(idestacion+id_venta,10)+ '\n\n');
+            }
+            if(printrec == 1){
+                printport.write('Numero: ' +id_ventarec+ '\n\n');
+            }
+            var f = new Date();
             printport.write('Fecha:' + String(f.getDate() + "-" + (f.getMonth() + 1) + "-" + f.getFullYear() + ' ' + f.getHours() + ':' + f.getMinutes()) + '\n\n');                                                      
-            codigoError = '0';
-            b_enviada = 'TRUE';
             if(imprime_contadores == 1){         
                 printport.write('Visitas: ' + visitasDia + 'd  ' + visitasSema + 's  ' + visitasMes + 'm  ' + '\n\n\n');
                 printport.write('Volumen dia: G' + volDia +'\n');
@@ -2706,7 +2566,11 @@ function print_venta(){
                 printport.write(telefono+'\n');
                 printport.write('\n');
                 printport.write('Serial:\n');
-                printport.write(serial + '\n\n'); /*global serial*/
+                if(printrec == 0){
+                    printport.write(serial + '\n\n'); /*global serial*/    
+                }else{
+                    printport.write(serialrec + '\n\n'); /*global serial*/
+                }
                 printport.write('Placa: ' + placa +'\n');
                 printport.write('Km   : ' + km +'\n');/*global km*/
                 if(imprime_saldo == 1){        
@@ -2714,7 +2578,7 @@ function print_venta(){
                 }
             }
             
-            printport.write('Posicion: ' + cara + '\n'); /*global cara*/
+            printport.write('Posicion: ' + cara + '\n');
             printport.write('Producto: ');
             switch(idproducto){
                 case '1':
@@ -2733,23 +2597,491 @@ function print_venta(){
                    printport.write('Supreme Diesel\n'); 
                 break;                 
             }
-            precio1 = parseFloat(precio);/*global precio*/
+            var precio1;
+            var dinero1;
+            
+            if(printrec == 0){
+                precio1 = parseFloat(precio);
+                volumen[3]=46;
+                var volumen1 = parseFloat(volumen);
+                printport.write('Volumen : G' + volumen1 + '\n');
+                dinero1 = parseFloat(dinero);
+            }
+            if(printrec == 1){
+                precio1 = parseFloat(preciorec);
+                printport.write('Volumen : G' + vol_tabla + '\n');
+                dinero1 = parseFloat(dinerorec);
+            }
             printport.write('PPU     : $' + String(precio1) + '\n');
-            volumen[3]=46;
-            volumen1 = parseFloat(volumen); /*global volumen*/
-            printport.write('Volumen : G' + volumen1 + '\n');
-            dinero1 = parseFloat(dinero); /*global dinero*/
             printport.write('Dinero  : $' + String(dinero1) + '\n\n\n');
             printport.write('Firma :'+ '\n\n');
             printport.write('       --------------------'+ '\n\n');
             printport.write('Cedula:' + '\n');
             printport.write('       --------------------'+ '\n\n');
             printport.write(footer+ '\n');
-            printport.write('\n\n\n\n\n\n\n'); 
-        }
-        //mod ayer
+            printport.write('\n\n\n\n\n\n\n');   
+    }
+        else{
+            muxport.write('BBB');
+            muxport.write('E');
+            muxport.write(String(cara));
+            muxport.write('3');                         //Error de Operacion
+            muxport.write('*');        
+            //printport.write('\n\nERROR: \n');
+            
+            
+            
+    
+            switch(codigoError){
+                case 0:                                         //Códigos de error enviados por Autogas
+                   printport.write('\nÉXITO\n'); 
+                break; 
+                case 100:
+                   printport.write('\nEL SERIAL DEL VEHICULO  NO EXISTE\n'); 
+                break; 
+                case 200:
+                   printport.write('\nPARAMETROS DE ENTRADA\n'); 
+                   printport.write('\nINCORRECTOS\n');                
+                break; 
+                case 300:
+                   printport.write('\nERROR DESCONOCIDO\n'); 
+                break; 
+                case 400:
+                   printport.write('\nCUENTA SIN CUPO\n'); 
+                break; 
+                case 501:
+                   printport.write('\nVEHICULO NO TIENE VOLUMEN AL DIA\n'); 
+                break; 
+                case 502:
+                   printport.write('\nVEHICULO NO TIENE VOLUMEN A LA\n'); 
+                   printport.write('\nSEMANA\n');               
+                break; 
+                case 503:
+                   printport.write('\nVEHICULO NO TIENE VOLUMEN AL\n'); 
+                   printport.write('\nMES\n');                
+                break; 
+                case 601:
+                   printport.write('\nVEHICULO NO TIENE VISITAS AL DIA\n'); 
+                break; 
+                case 602:
+                   printport.write('\nVEHICULO NO TIENE VISITAS A LA\n'); 
+                   printport.write('\nSEMANA\n');               
+                break; 
+                case 603:
+                   printport.write('\nVEHICULO NO TIENE VISITAS AL MES\n'); 
+                break; 
+                case 701:
+                   printport.write('\nVEHICULO NO TIENE DINERO AL DIA\n'); 
+                break; 
+                case 702:
+                   printport.write('\nVEHICULO NO TIENE DINERO A LA\n'); 
+                   printport.write('\nSEMANA\n');                
+                break; 
+                case 703:
+                   printport.write('\nVEHICULO NO TIENE DINERO AL MES\n'); 
+                break; 
+                case 801:
+                   printport.write('\nVEHICULO NO PUEDE TANQUEAR EN\n'); 
+                   printport.write('\nESTA HORA\n'); 
+                break; 
+                case 901:
+                   printport.write('\nVEHICULO NO PUEDE TANQUEAR EN \n');
+                   printport.write('\nESTA EDS\n'); 
+                break; 
+                case 1001:
+                   printport.write('\nVEHICULO NO PUEDE TANQUEAR EL\n'); 
+                   printport.write('\nPRODUCTO SELECCIONADO\n');                
+                break; 
+                case 1101:
+                   printport.write('\nLA CUENTA SE ENCUENTRA EN\n'); 
+                   printport.write('\nESTADO BLOQUEADO\n');                
+                break; 
+                case 1102:
+                   printport.write('\nLA CUENTA  SE ENCUENTRA  EN UNA\n'); 
+                   printport.write('\nFECHA VENCIDA\n');                
+                break; 
+                case 1201:
+                   printport.write('\nEL VEHICULO SE ENCUENTRA EN\n'); 
+                   printport.write('\nESTADO BLOQUEADO\n'); 
+                break; 
+                case 1302:
+                   printport.write('\nLA EDS NO ES VALIDA\n'); 
+                break; 
+                case 1401:
+                   printport.write('\nEL KILOMETRAJE INGRESADO ES\n'); 
+                   printport.write('\nINFERIOR AL ULTIMO INGRESADO\n');                
+                break; 
+                case 1501:
+                   printport.write('\nEL VOLUMEN SUPERA LA CAPACIDAD\n'); 
+                   printport.write('\nDEL TANQUE DEL VEHICULO\n'); 
+                break;             
+            }
+            
+            if(codigoError == '2002'|| codigoError ==undefined || codigoError == 200){ //Impresión de venta autorizada 
+                imp ='0';  //Repetida en servidor 
+                //printport.write('CODIGO DE ERROR: ');
+                //printport.write(String(codigoError)); 
+                printport.write('\n\n\n\n\n');
+                printport.write('  '+linea1 +'\n');
+                printport.write('   '+linea2 +'\n');
+                printport.write('      '+nit+'\n');
+                printport.write('      Tel: '+tel+'\n');
+                printport.write('  '+dir+ '\n\n');
+                printport.write('Numero: ' +parseInt(idestacion+id_venta,10)+ '\n\n');
+                f = new Date();
+                printport.write('Fecha:' + String(f.getDate() + "-" + (f.getMonth() + 1) + "-" + f.getFullYear() + ' ' + f.getHours() + ':' + f.getMinutes()) + '\n\n');                                                      
+                codigoError = '0';
+                b_enviada = 'TRUE';
+                if(imprime_contadores == 1){         
+                    printport.write('Visitas: ' + visitasDia + 'd  ' + visitasSema + 's  ' + visitasMes + 'm  ' + '\n\n\n');
+                    printport.write('Volumen dia: G' + volDia +'\n');
+                    printport.write('Volumen sem: G' + volSema +'\n');
+                    printport.write('Volumen mes: G' + volMes +'\n\n');
+                    printport.write('Dinero dia:  $' + dineroDia +'\n');
+                    printport.write('Dinero sem:  $' + dineroSema +'\n');
+                    printport.write('Dinero mes:  $' + dineroMes +'\n\n'); 
+                }
+                if(serial !='0000000000000000'){
+                    printport.write('Empresa:\n');
+                    printport.write(String(nombreCuenta) + '\n');
+                    printport.write('Direccion:\n');
+                    printport.write(direccion+'\n');
+                    printport.write('Telefono:\n');
+                    printport.write(telefono+'\n');
+                    printport.write('\n');
+                    printport.write('Serial:\n');
+                    printport.write(serial + '\n\n'); /*global serial*/
+                    printport.write('Placa: ' + placa +'\n');
+                    printport.write('Km   : ' + km +'\n');/*global km*/
+                    if(imprime_saldo == 1){        
+                        printport.write('Saldo: $' + saldo + '\n\n');
+                    }
+                }
+                
+                printport.write('Posicion: ' + cara + '\n'); /*global cara*/
+                printport.write('Producto: ');
+                switch(idproducto){
+                    case '1':
+                       printport.write('Diesel\n'); 
+                    break;
+                    
+                    case '2':
+                       printport.write('Corriente\n'); 
+                    break; 
+                    
+                    case '3':
+                       printport.write('Extra\n'); 
+                    break; 
+                    
+                    case '4':
+                       printport.write('Supreme Diesel\n'); 
+                    break;                 
+                }
+                precio1 = parseFloat(precio);/*global precio*/
+                printport.write('PPU     : $' + String(precio1) + '\n');
+                volumen[3]=46;
+                volumen1 = parseFloat(volumen); /*global volumen*/
+                printport.write('Volumen : G' + volumen1 + '\n');
+                dinero1 = parseFloat(dinero); /*global dinero*/
+                printport.write('Dinero  : $' + String(dinero1) + '\n\n\n');
+                printport.write('Firma :'+ '\n\n');
+                printport.write('       --------------------'+ '\n\n');
+                printport.write('Cedula:' + '\n');
+                printport.write('       --------------------'+ '\n\n');
+                printport.write(footer+ '\n');
+                printport.write('\n\n\n\n\n\n\n'); 
+            }
+            //mod ayer
     } 
-    console.log("FIN IMPRIMIENDO");
+        console.log("FIN IMPRIMIENDO");
+    }
+}
+
+
+
+/*
+*********************************************************************************************************
+*                                function print_ventaSeg()
+*
+* Description : Envia los datos para imprimir la venta
+*               
+*********************************************************************************************************
+*/
+
+function print_ventaSeg(){
+    console.log("IMPRIMIENDO");
+    console.log(codigoError);
+    if(imp2 == 0){
+        imp2 =1;
+        if(codigoError == '0'){
+            muxport.write('BBB');
+            muxport.write('E');
+            muxport.write(String(cara));
+            muxport.write('2');                         //Gracias por su compra
+            muxport.write('*');        
+            console.log("RECIBO");
+            console.log('\n\n');
+            printport.write('  '+linea1 +'\n');
+            printport.write('   '+linea2 +'\n');
+            printport.write('      '+nit+'\n');
+            printport.write('      Tel: '+tel+'\n');
+            printport.write('  '+dir+ '\n\n');
+            if(printrec == 0){
+                printport.write('Numero: ' +parseInt(idestacion+id_venta,10)+ '\n\n');
+            }
+            if(printrec == 1){
+                printport.write('Numero: ' +id_ventarec+ '\n\n');
+            }
+            var f = new Date();
+            printport.write('Fecha:' + String(f.getDate() + "-" + (f.getMonth() + 1) + "-" + f.getFullYear() + ' ' + f.getHours() + ':' + f.getMinutes()) + '\n\n');                                                      
+            if(imprime_contadores == 1){         
+                printport.write('Visitas: ' + visitasDia + 'd  ' + visitasSema + 's  ' + visitasMes + 'm  ' + '\n\n\n');
+                printport.write('Volumen dia: G' + volDia +'\n');
+                printport.write('Volumen sem: G' + volSema +'\n');
+                printport.write('Volumen mes: G' + volMes +'\n\n');
+                printport.write('Dinero dia:  $' + dineroDia +'\n');
+                printport.write('Dinero sem:  $' + dineroSema +'\n');
+                printport.write('Dinero mes:  $' + dineroMes +'\n\n'); 
+            }
+            if(serial !='0000000000000000'){
+                printport.write('Empresa:\n');
+                printport.write(String(nombreCuenta) + '\n');
+                printport.write('Direccion:\n');
+                printport.write(direccion+'\n');
+                printport.write('Telefono:\n');
+                printport.write(telefono+'\n');
+                printport.write('\n');
+                printport.write('Serial:\n');
+                if(printrec == 0){
+                    printport.write(serial + '\n\n'); /*global serial*/    
+                }else{
+                    printport.write(serialrec + '\n\n'); /*global serial*/
+                }
+                printport.write('Placa: ' + placa +'\n');
+                printport.write('Km   : ' + km +'\n');/*global km*/
+                if(imprime_saldo == 1){        
+                    printport.write('Saldo: $' + saldo + '\n\n');
+                }
+            }
+            
+            printport.write('Posicion: ' + cara + '\n');
+            printport.write('Producto: ');
+            switch(idproducto){
+                case '1':
+                   printport.write('Diesel\n'); 
+                break;
+                
+                case '2':
+                   printport.write('Corriente\n'); 
+                break; 
+                
+                case '3':
+                   printport.write('Extra\n'); 
+                break; 
+                
+                case '4':
+                   printport.write('Supreme Diesel\n'); 
+                break;                 
+            }
+            var precio1;
+            var dinero1;
+            
+            if(printrec == 0){
+                precio1 = parseFloat(precio);
+                volumen[3]=46;
+                var volumen1 = parseFloat(volumen);
+                printport.write('Volumen : G' + volumen1 + '\n');
+                dinero1 = parseFloat(dinero);
+            }
+            if(printrec == 1){
+                precio1 = parseFloat(preciorec);
+                printport.write('Volumen : G' + vol_tabla + '\n');
+                dinero1 = parseFloat(dinerorec);
+            }
+            printport.write('PPU     : $' + String(precio1) + '\n');
+            printport.write('Dinero  : $' + String(dinero1) + '\n\n\n');
+            printport.write('Firma :'+ '\n\n');
+            printport.write('       --------------------'+ '\n\n');
+            printport.write('Cedula:' + '\n');
+            printport.write('       --------------------'+ '\n\n');
+            printport.write(footer+ '\n');
+            printport.write('\n\n\n\n\n\n\n');   
+        }
+        else{
+            muxport.write('BBB');
+            muxport.write('E');
+            muxport.write(String(cara));
+            muxport.write('3');                         //Error de Operacion
+            muxport.write('*');        
+            //printport.write('\n\nERROR: \n');
+            
+            
+            
+    
+            switch(codigoError){
+                case 0:                                         //Códigos de error enviados por Autogas
+                   printport.write('\nÉXITO\n'); 
+                break; 
+                case 100:
+                   printport.write('\nEL SERIAL DEL VEHICULO  NO EXISTE\n'); 
+                break; 
+                case 200:
+                   printport.write('\nPARAMETROS DE ENTRADA\n'); 
+                   printport.write('\nINCORRECTOS\n');                
+                break; 
+                case 300:
+                   printport.write('\nERROR DESCONOCIDO\n'); 
+                break; 
+                case 400:
+                   printport.write('\nCUENTA SIN CUPO\n'); 
+                break; 
+                case 501:
+                   printport.write('\nVEHICULO NO TIENE VOLUMEN AL DIA\n'); 
+                break; 
+                case 502:
+                   printport.write('\nVEHICULO NO TIENE VOLUMEN A LA\n'); 
+                   printport.write('\nSEMANA\n');               
+                break; 
+                case 503:
+                   printport.write('\nVEHICULO NO TIENE VOLUMEN AL\n'); 
+                   printport.write('\nMES\n');                
+                break; 
+                case 601:
+                   printport.write('\nVEHICULO NO TIENE VISITAS AL DIA\n'); 
+                break; 
+                case 602:
+                   printport.write('\nVEHICULO NO TIENE VISITAS A LA\n'); 
+                   printport.write('\nSEMANA\n');               
+                break; 
+                case 603:
+                   printport.write('\nVEHICULO NO TIENE VISITAS AL MES\n'); 
+                break; 
+                case 701:
+                   printport.write('\nVEHICULO NO TIENE DINERO AL DIA\n'); 
+                break; 
+                case 702:
+                   printport.write('\nVEHICULO NO TIENE DINERO A LA\n'); 
+                   printport.write('\nSEMANA\n');                
+                break; 
+                case 703:
+                   printport.write('\nVEHICULO NO TIENE DINERO AL MES\n'); 
+                break; 
+                case 801:
+                   printport.write('\nVEHICULO NO PUEDE TANQUEAR EN\n'); 
+                   printport.write('\nESTA HORA\n'); 
+                break; 
+                case 901:
+                   printport.write('\nVEHICULO NO PUEDE TANQUEAR EN \n');
+                   printport.write('\nESTA EDS\n'); 
+                break; 
+                case 1001:
+                   printport.write('\nVEHICULO NO PUEDE TANQUEAR EL\n'); 
+                   printport.write('\nPRODUCTO SELECCIONADO\n');                
+                break; 
+                case 1101:
+                   printport.write('\nLA CUENTA SE ENCUENTRA EN\n'); 
+                   printport.write('\nESTADO BLOQUEADO\n');                
+                break; 
+                case 1102:
+                   printport.write('\nLA CUENTA  SE ENCUENTRA  EN UNA\n'); 
+                   printport.write('\nFECHA VENCIDA\n');                
+                break; 
+                case 1201:
+                   printport.write('\nEL VEHICULO SE ENCUENTRA EN\n'); 
+                   printport.write('\nESTADO BLOQUEADO\n'); 
+                break; 
+                case 1302:
+                   printport.write('\nLA EDS NO ES VALIDA\n'); 
+                break; 
+                case 1401:
+                   printport.write('\nEL KILOMETRAJE INGRESADO ES\n'); 
+                   printport.write('\nINFERIOR AL ULTIMO INGRESADO\n');                
+                break; 
+                case 1501:
+                   printport.write('\nEL VOLUMEN SUPERA LA CAPACIDAD\n'); 
+                   printport.write('\nDEL TANQUE DEL VEHICULO\n'); 
+                break;             
+            }
+            
+            if(codigoError == '2002'|| codigoError ==undefined || codigoError == 200){ //Impresión de venta autorizada 
+                imp ='0';  //Repetida en servidor 
+                //printport.write('CODIGO DE ERROR: ');
+                //printport.write(String(codigoError)); 
+                printport.write('\n\n\n\n\n');
+                printport.write('  '+linea1 +'\n');
+                printport.write('   '+linea2 +'\n');
+                printport.write('      '+nit+'\n');
+                printport.write('      Tel: '+tel+'\n');
+                printport.write('  '+dir+ '\n\n');
+                printport.write('Numero: ' +parseInt(idestacion+id_venta,10)+ '\n\n');
+                f = new Date();
+                printport.write('Fecha:' + String(f.getDate() + "-" + (f.getMonth() + 1) + "-" + f.getFullYear() + ' ' + f.getHours() + ':' + f.getMinutes()) + '\n\n');                                                      
+                codigoError = '0';
+                b_enviada = 'TRUE';
+                if(imprime_contadores == 1){         
+                    printport.write('Visitas: ' + visitasDia + 'd  ' + visitasSema + 's  ' + visitasMes + 'm  ' + '\n\n\n');
+                    printport.write('Volumen dia: G' + volDia +'\n');
+                    printport.write('Volumen sem: G' + volSema +'\n');
+                    printport.write('Volumen mes: G' + volMes +'\n\n');
+                    printport.write('Dinero dia:  $' + dineroDia +'\n');
+                    printport.write('Dinero sem:  $' + dineroSema +'\n');
+                    printport.write('Dinero mes:  $' + dineroMes +'\n\n'); 
+                }
+                if(serial !='0000000000000000'){
+                    printport.write('Empresa:\n');
+                    printport.write(String(nombreCuenta) + '\n');
+                    printport.write('Direccion:\n');
+                    printport.write(direccion+'\n');
+                    printport.write('Telefono:\n');
+                    printport.write(telefono+'\n');
+                    printport.write('\n');
+                    printport.write('Serial:\n');
+                    printport.write(serial + '\n\n'); /*global serial*/
+                    printport.write('Placa: ' + placa +'\n');
+                    printport.write('Km   : ' + km +'\n');/*global km*/
+                    if(imprime_saldo == 1){        
+                        printport.write('Saldo: $' + saldo + '\n\n');
+                    }
+                }
+                
+                printport.write('Posicion: ' + cara + '\n'); /*global cara*/
+                printport.write('Producto: ');
+                switch(idproducto){
+                    case '1':
+                       printport.write('Diesel\n'); 
+                    break;
+                    
+                    case '2':
+                       printport.write('Corriente\n'); 
+                    break; 
+                    
+                    case '3':
+                       printport.write('Extra\n'); 
+                    break; 
+                    
+                    case '4':
+                       printport.write('Supreme Diesel\n'); 
+                    break;                 
+                }
+                precio1 = parseFloat(precio);/*global precio*/
+                printport.write('PPU     : $' + String(precio1) + '\n');
+                volumen[3]=46;
+                volumen1 = parseFloat(volumen); /*global volumen*/
+                printport.write('Volumen : G' + volumen1 + '\n');
+                dinero1 = parseFloat(dinero); /*global dinero*/
+                printport.write('Dinero  : $' + String(dinero1) + '\n\n\n');
+                printport.write('Firma :'+ '\n\n');
+                printport.write('       --------------------'+ '\n\n');
+                printport.write('Cedula:' + '\n');
+                printport.write('       --------------------'+ '\n\n');
+                printport.write(footer+ '\n');
+                printport.write('\n\n\n\n\n\n\n'); 
+            }
+            //mod ayer
+        } 
+        console.log("FIN IMPRIMIENDO");
+    }
+    
 }
 
 /*
@@ -2789,23 +3121,67 @@ function enviaInternet(){
         if(err){
             return console.error('error conexion save_sale', err);
         }else{
-            client.query("SELECT enviada FROM venta where id = (SELECT MAX(id) FROM venta);", function(err,result){
+            client.query("SELECT enviada,volumen, cara FROM venta where id = (SELECT MAX(id) FROM venta) AND cara = '1';", function(err,result){
 	            done();
 	            if(err){
 		        return console.error('error seleccion MAX venta', err);
 	            }else{
+	                
 		            subeInternet = result.rows[0].enviada;
 		            console.log("Internet>>" + subeInternet);
 		            if (subeInternet){
 		                console.log("No hay que subir venta");
 		            }else{
-		                console.log("Venta por subir");
+		                if(result.rows[0].volumen != null){
+		                    volumen[3]=44;
+		                    console.log("Venta por subir cara 1");
+                            imp =1;
+                            rest_sale();   
+		                }
 		            }
 	            }
             });
         }
     }); 
 }
+
+/*
+*********************************************************************************************************
+*                                function enviaInternetSeg()
+*
+* Description : Guarda la venta en la base de datos
+*               
+*********************************************************************************************************
+*/
+function enviaInternetSeg(){
+    pg.connect(conString, function(err, client, done){                  //conectar a la base de datos
+        if(err){
+            return console.error('error conexion save_sale', err);
+        }else{
+            client.query("SELECT enviada,volumen, cara FROM venta where id = (SELECT MAX(id) FROM venta) AND cara = '2';", function(err,result){
+	            done();
+	            if(err){
+		        return console.error('error seleccion MAX venta', err);
+	            }else{
+	                
+		            subeInternet2 = result.rows[0].enviada;
+		            console.log("Internet>>" + subeInternet2);
+		            if (subeInternet2){
+		                console.log("No hay que subir venta");
+		            }else{
+		                if(result.rows[0].volumen != null){
+		                    volumen[3]=44;
+		                    console.log("Venta por subir cara2");
+                            imp2 =1;
+                            rest_sale();   
+		                }
+		            }
+	            }
+            });
+        }
+    }); 
+}
+
 
 
 
@@ -2824,6 +3200,7 @@ function enviaInternet(){
 function watchful(){
     console.log("Vigilando");
     enviaInternet();
+    enviaInternetSeg();
     var f = new Date();
     if((f.getHours()=='14')&&(f.getMinutes()=='44')&&(corte_ok==0)){
         printport.write('MOMENTO DE CORTE\n');
@@ -2837,9 +3214,6 @@ function watchful(){
     else{
         corte_ok=0;
     }
-    //if (b_enviada == 'FALSE'){
-      // rest_sale(); 
-    //}
 }
 
 /*
