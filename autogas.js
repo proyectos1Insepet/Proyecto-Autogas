@@ -127,6 +127,21 @@ var enable_count;
 var contador;
 var saveEfectivo;
 var insertado;
+var caraint;
+var serialint;
+var precioint;
+var kmint;
+var idestacionint;
+var volumenint;
+var dineroint;
+var id_ventaint;
+var idproductoint;
+var autorizacionint;
+var fechaint;
+var nombreCuentaint;
+var telefonoint;
+var direccionint;
+
 /********************Arreglos**************************************/            
 
 serialrec       = new Buffer(16); /*global serialrec*/
@@ -137,9 +152,9 @@ km              = new Buffer(7);
 idestacion      = new Buffer(4);
 volumen         = new Buffer(7);
 dinero          = new Buffer(7);
-volumenrec      = new Buffer(7); /*global volumenrec*/
 dinerorec       = new Buffer(7); /*global dinerorec*/
-var serial          = new Buffer(16); /*global serial*/
+serial          = new Buffer(16); /*global serial*/
+var volumenrec      = new Buffer(7); /*global volumenrec*/
 var autorizacion= new Buffer(38);
 var autorizaefec= new Buffer(38);
 var id_venta        = new Buffer(7);
@@ -1237,6 +1252,11 @@ function rx_data_mux(data){
                 }
                 console.log('>>'+b);
                 console.log(n_id);
+                if (cara == '1'){
+                    imp = 0;
+                }else{
+                    imp2 = 0;
+                }
                 rest_sale();    
             break;
             
@@ -2206,9 +2226,11 @@ function save_sale(){
                             printrec = 0;
                             b_bd = 0;
                             if(cara == '1'){
+                                imp = 0;
                                 print_venta(); //Imprime venta sin insertar en la DB
                             }
                             if(cara == '2'){
+                                imp2 = 0;
                                 print_ventaSeg(); //Imprime venta sin insertar en la DB
                             }
                         }
@@ -2345,6 +2367,89 @@ function save_sale_rec(){
 *               
 *********************************************************************************************************
 */
+function rest_sale_internet(){
+    var n_id = idestacionint + id_ventaint;
+    trycatch(function() {
+        var opt_rest_venta = {
+                url: sprintf(url_save+"/rest/UploadSale/%1$s/%2$s/%3$s/%4$s/%5$s/%6$s/%7$s/%8$s/%9$s/%10$s/%11$s/%12$s", caraint, idproductoint, volumenint, dineroint, precioint, idestacionint, serialint, autorizacionint, n_id, kmint, fechaint, fechaint), /*global autorizacion*//*global idestacion*/
+                method: "POST",
+            };   
+            console.log(n_id);
+        rest_venta(opt_rest_venta, 
+        function(error, response, body) {
+          
+      
+            var elements2 = ds.deserialize(body);
+            var jsonString2 = ds.getJson(elements2);
+        
+            console.log(jsonString2);
+        
+            var result2 = JSON.parse(jsonString2);
+        
+            codigoError        =  result2.cV0001responseREST.codError.value;
+            dineroDia          =  result2.cV0001responseREST.dineroDia.value;           //Resultados enviados por Autogas
+            dineroMes          =  result2.cV0001responseREST.dineroMes.value;
+            dineroSema         =  result2.cV0001responseREST.dineroSema.value;
+            imprime_contadores =  String(result2.cV0001responseREST.imprimeContador.value);              
+            imprime_saldo      =  String(result2.cV0001responseREST.imprimeSaldo.value);
+            //nombreCuenta       =  result2.cV0001responseREST.nombreCuenta.value;
+            placa              =  result2.cV0001responseREST.placa.value;
+            retorno            =  result2.cV0001responseREST.retorno.value;
+            saldo              =  String(result2.cV0001responseREST.saldo.value);
+            visitasDia         =  String(result2.cV0001responseREST.visitasDia.value);
+            visitasMes         =  String(result2.cV0001responseREST.visitasMes.value);
+            visitasSema        =  String(result2.cV0001responseREST.visitasSema.value);
+            volDia             =  String(result2.cV0001responseREST.volDia.value);
+            volMes             =  String(result2.cV0001responseREST.volMes.value);
+            volSema            =  String(result2.cV0001responseREST.volSema.value);
+            if(caraint =='1'){
+                imp =0;
+            }
+            if(caraint =='2'){
+                imp2 =0;
+            }
+            console.log("Termina post");
+            b_enviada = 'TRUE';
+            error_local = '0';
+            if(serialint =='0000000000000000'){
+                save_sale_ef();    
+            }
+            if(serialint != '0000000000000000' ){
+                save_sale();
+            }
+        });
+    }, function(err) {
+        console.log(err.stack);
+        console.log("Termina post con error");
+        error_local = '1';
+        b_enviada = 'FALSE'; 
+        if(caraint =='1' && imp ==0){
+            printport.write('No se logro enviar al servidor\n\n'); //Informa que no se pudo subir venta a remoto
+            printport.write('*****VENTA ALMACENADA LOCAL*****\n');
+            printport.write('****SIN CONEXION A INTERNET*****\n');
+        }
+        if(caraint =='2' && imp2 ==0){
+            printport.write('No se logro enviar al servidor\n\n'); //Informa que no se pudo subir venta a remoto
+            printport.write('*****VENTA ALMACENADA LOCAL*****\n');
+            printport.write('****SIN CONEXION A INTERNET*****\n');
+        }
+        if(serialint =='0000000000000000'){
+            save_sale_ef();    
+        }
+        if(serialint != '0000000000000000'){
+            save_sale();
+        }
+    });
+}
+
+/*
+*********************************************************************************************************
+*                                function rest_sale()
+*
+* Description : LLama el servicio Web para guardar una venta
+*               
+*********************************************************************************************************
+*/
 function rest_sale(){
     var n_id = idestacion + id_venta;
     trycatch(function() {
@@ -2419,6 +2524,7 @@ function rest_sale(){
         }
     });
 }
+
 /*
 *********************************************************************************************************
 *                                function rest_sale_rec()
@@ -2558,7 +2664,7 @@ function print_venta(){
             if(printrec == 1){
                 printport.write('Numero: ' +id_ventarec+ '\n\n');
             }
-            if(printrec == 3){
+            if(printrec == 2){
                 printport.write('Numero: ' +id_venta+ '\n\n');
             }
             var f = new Date();
@@ -2583,8 +2689,12 @@ function print_venta(){
                 printport.write('Serial:\n');
                 if(printrec == 0){
                     printport.write(serial + '\n\n'); /*global serial*/    
-                }else{
+                }
+                if(printrec == 1){
                     printport.write(serialrec + '\n\n'); /*global serial*/
+                }
+                if(printrec == 2){
+                    printport.write(serial + '\n\n'); /*global serial*/    
                 }
                 printport.write('Placa: ' + placa +'\n');
                 printport.write('Km   : ' + km +'\n');/*global km*/
@@ -2615,7 +2725,7 @@ function print_venta(){
             var precio1;
             var dinero1;
             
-            if(printrec == 0){
+            if(printrec == 0 ||printrec == 2){
                 precio1 = parseFloat(precio);
                 volumen[3]=46;
                 var volumen1 = parseFloat(volumen);
@@ -2847,7 +2957,7 @@ function print_ventaSeg(){
             if(printrec == 1){
                 printport.write('Numero: ' +id_ventarec+ '\n\n');
             }
-            if(printrec == 3){
+            if(printrec == 2){
                 printport.write('Numero: ' +id_venta+ '\n\n');
             }
             var f = new Date();
@@ -2870,7 +2980,7 @@ function print_ventaSeg(){
                 printport.write(telefono+'\n');
                 printport.write('\n');
                 printport.write('Serial:\n');
-                if(printrec == 0){
+                if(printrec == 0||printrec == 2 ){
                     printport.write(serial + '\n\n'); /*global serial*/    
                 }else{
                     printport.write(serialrec + '\n\n'); /*global serial*/
@@ -2904,7 +3014,7 @@ function print_ventaSeg(){
             var precio1;
             var dinero1;
             
-            if(printrec == 0){
+            if(printrec == 0 || printrec == 2){
                 precio1 = parseFloat(precio);
                 volumen[3]=46;
                 var volumen1 = parseFloat(volumen);
@@ -3152,39 +3262,39 @@ function enviaInternet(){
 		                console.log("No hay que subir venta");
 		            }else{
 		                if(result.rows[0].volumen != null){
-		                    cara         = '1';
-					        idproducto   = result.rows[0].producto;
-					        volumenrec   = result.rows[0].volumen;
-					        volumen      = volumenrec.replace('.', ',');
-					        dinero       = result.rows[0].dinero;
-					        precio       = result.rows[0].precio;
-					        idestacion   = result.rows[0].idestacion;
-					        serial       = result.rows[0].serial;
-					        km           = result.rows[0].km;
-					        autorizacion = result.rows[0].autorizacion;	
-					        fecha        = result.rows[0].fecha;
-					        nombreCuenta = result.rows[0].nombrecuenta;
-					        direccion    = result.rows[0].direccion;
-					        telefono     = result.rows[0].telefono;
-					        id_venta     = result.rows[0].id_venta;
+		                    caraint         = '1';
+					        idproductoint   = result.rows[0].producto;
+					        volumenrec      = result.rows[0].volumen;
+					        volumenint      = volumenrec.replace('.', ',');
+					        dineroint       = result.rows[0].dinero;
+					        precioint       = result.rows[0].precio;
+					        idestacionint   = result.rows[0].idestacion;
+					        serialint       = result.rows[0].serial;
+					        kmint           = result.rows[0].km;
+					        autorizacionint = result.rows[0].autorizacion;	
+					        fechaint        = result.rows[0].fecha;
+					        nombreCuentaint = result.rows[0].nombrecuenta;
+					        direccionint    = result.rows[0].direccion;
+					        telefonoint     = result.rows[0].telefono;
+					        id_ventaint     = result.rows[0].id_venta;
                             printrec     = 2;
-					        console.log("Venta recuperada Internet: ");
-        					console.log("Cara>> "+ cara);
-        					console.log("Producto>> "+ idproducto);
-        					console.log("Volumen>> "+ volumen);
-        					console.log("Dinero>> "+ dinero);
-        					console.log("Precio>> "+ precio);
-        					console.log("ID Estacion>> "+ idestacion);
-        					console.log("Serial>> "+ serial);
-        					console.log("Autorizacion>> "+ autorizacion);
-        					console.log("ID Venta>> "+ id_venta);
-        					console.log("Fecha>> "+ fecha);
-        					console.log("Cuenta>> "+ nombreCuenta);
-        					console.log("Direccion>> "+ direccion);
-        					console.log("Telefono>> "+ telefono);
+					        console.log("Venta recuperada Internet 1: ");
+        					console.log("Cara>> "+ caraint);
+        					console.log("Producto>> "+ idproductoint);
+        					console.log("Volumen>> "+ volumenint);
+        					console.log("Dinero>> "+ dineroint);
+        					console.log("Precio>> "+ precioint);
+        					console.log("ID Estacion>> "+ idestacionint);
+        					console.log("Serial>> "+ serialint);
+        					console.log("Autorizacion>> "+ autorizacionint);
+        					console.log("ID Venta>> "+ id_ventaint);
+        					console.log("Fecha>> "+ fechaint);
+        					console.log("Cuenta>> "+ nombreCuentaint);
+        					console.log("Direccion>> "+ direccionint);
+        					console.log("Telefono>> "+ telefonoint);
 		                    console.log("Venta por subir cara 1");
-                            imp =1;
-                            rest_sale();   
+		                    imp = 1;
+                            rest_sale_internet();   
 		                }
 		            }
 	            }
@@ -3218,39 +3328,39 @@ function enviaInternetSeg(){
 		                console.log("No hay que subir venta");
 		            }else{
 		                if(result.rows[0].volumen != null){
-		                    cara         = '2';
-		                    idproducto   = result.rows[0].producto;
-					        volumenrec   = result.rows[0].volumen;
-					        volumen      = volumenrec.replace('.', ',');
-					        dinero       = result.rows[0].dinero;
-					        precio       = result.rows[0].precio;
-					        idestacion   = result.rows[0].idestacion;
-					        serial       = result.rows[0].serial;
-					        km           = result.rows[0].km;
-					        autorizacion= result.rows[0].autorizacion;	
-					        fecha        = result.rows[0].fecha;
-					        nombreCuenta = result.rows[0].nombrecuenta;
-					        direccion    = result.rows[0].direccion;
-					        telefono     = result.rows[0].telefono;
-					        id_venta     = result.rows[0].id_venta;
+		                    caraint         = '2';
+		                    idproductoint   = result.rows[0].producto;
+					        volumenrec      = result.rows[0].volumen;
+					        volumenint      = volumenrec.replace('.', ',');
+					        dineroint       = result.rows[0].dinero;
+					        precioint       = result.rows[0].precio;
+					        idestacionint   = result.rows[0].idestacion;
+					        serialint       = result.rows[0].serial;
+					        kmint           = result.rows[0].km;
+					        autorizacionint = result.rows[0].autorizacion;	
+					        fechaint        = result.rows[0].fecha;
+					        nombreCuentaint = result.rows[0].nombrecuenta;
+					        direccionint    = result.rows[0].direccion;
+					        telefonoint     = result.rows[0].telefono;
+					        id_ventaint     = result.rows[0].id_venta;
                             printrec     = 2;
 					        console.log("Venta recuperada Internet 2: ");
-        					console.log("Cara>> "+ cara);
-        					console.log("Producto>> "+ idproducto);
-        					console.log("Volumen>> "+ volumen);
-        					console.log("Dinero>> "+ dinero);
-        					console.log("Precio>> "+ precio);
-        					console.log("ID Estacion>> "+ idestacion);
-        					console.log("Serial>> "+ serial);
-        					console.log("Autorizacion>> "+ autorizacion);
-        					console.log("ID Venta>> "+ id_venta);
-        					console.log("Fecha>> "+ fecha);
-        					console.log("Cuenta>> "+ nombreCuenta);
-        					console.log("Direccion>> "+ direccion);
-        					console.log("Telefono>> "+ telefono);
+        					console.log("Cara>> "+ caraint);
+        					console.log("Producto>> "+ idproductoint);
+        					console.log("Volumen>> "+ volumenint);
+        					console.log("Dinero>> "+ dineroint);
+        					console.log("Precio>> "+ precioint);
+        					console.log("ID Estacion>> "+ idestacionint);
+        					console.log("Serial>> "+ serialint);
+        					console.log("Autorizacion>> "+ autorizacionint);
+        					console.log("ID Venta>> "+ id_ventaint);
+        					console.log("Fecha>> "+ fechaint);
+        					console.log("Cuenta>> "+ nombreCuentaint);
+        					console.log("Direccion>> "+ direccionint);
+        					console.log("Telefono>> "+ telefonoint);
 		                    console.log("Venta por subir cara 2");
-                            imp2 =1;
-                            rest_sale();   
+		                    imp2 = 1;
+                            rest_sale_internet();   
 		                }
 		            }
 	            }
