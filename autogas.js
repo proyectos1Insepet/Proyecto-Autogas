@@ -140,6 +140,7 @@ var fechaint;
 var nombreCuentaint;
 var telefonoint;
 var direccionint;
+var placaint;
 var printInt;
 var printInt2;
 
@@ -3888,7 +3889,9 @@ function enviaInternet(){
         					console.log("Direccion>> "+ direccionint);
         					console.log("Telefono>> "+ telefonoint);
 		                    console.log("Venta por subir cara 1");
+		                    imp = 1;
                             rest_sale_internet();   
+                            actualAuto();
 		                }
 		            }
 	            }
@@ -3954,6 +3957,7 @@ function enviaInternetSeg(){
 		                    console.log("Venta por subir cara 2");
 		                    imp2 = 1;
                             rest_sale_internetSeg();   
+                            actualAuto();
 		                }
 		            }
 	            }
