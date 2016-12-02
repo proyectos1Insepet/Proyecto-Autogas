@@ -2068,6 +2068,9 @@ function autorizaMux(){
             case 300:
                printport.write('\nERROR DESCONOCIDO\n'); 
             break; 
+            case 350:
+                   printport.write('\nVEHICULO CONSUMIENDO\n'); 
+            break;
             case 400:
                printport.write('\nCUENTA SIN CUPO\n'); 
             break; 
@@ -2168,7 +2171,7 @@ function save_sale(){
                 }else{
                     console.log(result.rows[0].max);
                     var last_id = result.rows[0].max;           //Cargo el maximo id de venta
-                    if(codigoError == '0' && error_local=='0'){ //Cargar dato de si fue enviada o no la venta
+                    if(codigoError == '0' && error_local=='0'|| codigoError == '2002' || codigoError =='2001'){ //Cargar dato de si fue enviada o no la venta
                         b_enviada = 'TRUE';
                     }else{
                        b_enviada = 'FALSE';
@@ -2291,7 +2294,7 @@ function save_sale_rec(){
                 }else{
                     console.log(result.rows[0].max);
                     var last_id = result.rows[0].max;           //Cargo el maximo id de venta
-                    if(codigoError == '0' && error_local=='0'){ //Cargar dato de si fue enviada o no la venta
+                    if(codigoError == '0' && error_local=='0'|| codigoError == '2002' || codigoError =='2001'){ //Cargar dato de si fue enviada o no la venta
                         b_enviada = 'TRUE';
                         imp='0';
                     }else{
@@ -2839,6 +2842,9 @@ function print_venta(){
                 case 300:
                    printport.write('\nERROR DESCONOCIDO\n'); 
                 break; 
+                case 350:
+                   printport.write('\nVEHICULO CONSUMIENDO\n'); 
+                break;
                 case 400:
                    printport.write('\nCUENTA SIN CUPO\n'); 
                 break; 
@@ -3127,6 +3133,9 @@ function print_ventaSeg(){
                 case 300:
                    printport.write('\nERROR DESCONOCIDO\n'); 
                 break; 
+                case 350:
+                   printport.write('\nVEHICULO CONSUMIENDO\n'); 
+                break;
                 case 400:
                    printport.write('\nCUENTA SIN CUPO\n'); 
                 break; 
@@ -3393,6 +3402,9 @@ function print_ventaInt(){
                 case 300:
                    printport.write('\nERROR DESCONOCIDO\n'); 
                 break; 
+                case 350:
+                   printport.write('\nVEHICULO CONSUMIENDO\n'); 
+                break;
                 case 400:
                    printport.write('\nCUENTA SIN CUPO\n'); 
                 break; 
@@ -3464,9 +3476,10 @@ function print_ventaInt(){
                 break;             
             }
             
-            if(codigoError == '2002'|| codigoError ==undefined || codigoError == 200){ //Impresión de venta autorizada                 
+            if(codigoError == '2002'|| codigoError ==undefined || codigoError == 200 || codigoError == '2001'){ //Impresión de venta autorizada                 
                 //printport.write('CODIGO DE ERROR: ');
-                //printport.write(String(codigoError)); 
+                //printport.write(String(codigoError));
+                b_enviada = 'TRUE';
                 printport.write('\n\n\n\n\n');
                 printport.write('  '+linea1 +'\n');
                 printport.write('   '+linea2 +'\n');
@@ -3476,8 +3489,6 @@ function print_ventaInt(){
                 printport.write('Numero: ' +parseInt(idestacionint+id_ventaint,10)+ '\n\n');
                 f = new Date();
                 printport.write('Fecha:' + String(f.getDate() + "-" + (f.getMonth() + 1) + "-" + f.getFullYear() + ' ' + f.getHours() + ':' + f.getMinutes()) + '\n\n');                                                      
-                codigoError = '0';
-                b_enviada = 'TRUE';
                 if(imprime_contadores == 1){         
                     printport.write('Visitas: ' + visitasDia + 'd  ' + visitasSema + 's  ' + visitasMes + 'm  ' + '\n\n\n');
                     printport.write('Volumen dia: G' + volDia +'\n');
@@ -3500,7 +3511,7 @@ function print_ventaInt(){
                     printport.write('Placa: ' + placaint +'\n');
                     printport.write('Km   : ' + kmint +'\n');/*global km*/
                     if(imprime_saldo == 1){        
-                        printport.write('Saldo: $' + saldoint + '\n\n');
+                        printport.write('Saldo: $' + saldo + '\n\n');
                     }
                 }
                 
@@ -3526,6 +3537,7 @@ function print_ventaInt(){
                 precio1 = parseFloat(precioint);/*global precio*/
                 printport.write('PPU     : $' + String(precio1) + '\n');
                 volumen[3]=46;
+                var volumen1;
                 volumen1 = parseFloat(volumenint); /*global volumen*/
                 printport.write('Volumen : G' + volumen1 + '\n');
                 dinero1 = parseFloat(dineroint); /*global dinero*/
@@ -3659,7 +3671,10 @@ function print_ventaIntSeg(){
                 break; 
                 case 300:
                    printport.write('\nERROR DESCONOCIDO\n'); 
-                break; 
+                break;
+                case 350:
+                   printport.write('\nVEHICULO CONSUMIENDO\n'); 
+                break;
                 case 400:
                    printport.write('\nCUENTA SIN CUPO\n'); 
                 break; 
