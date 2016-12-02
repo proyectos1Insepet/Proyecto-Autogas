@@ -749,6 +749,7 @@ function procesaRec(){
                             if(err){
                                 return console.error('error seleccion id_venta', err);
                             }else{
+                                id_ventarec = idVentaRecuperada.slice(-6);
                                 id_ventarec = '200'+String(result.rows[0].id_venta); 
                             }
                         });
@@ -833,6 +834,7 @@ function procesaRecSeg(){
                             if(err){
                                 return console.error('error seleccion id_venta', err);
                             }else{
+                                id_ventarec = idVentaRecuperada.slice(-6);
                                 id_ventarec = '200'+String(result.rows[0].id_venta); 
                             }
                         });
@@ -2527,7 +2529,7 @@ function rest_sale_internet(){
 
 /*
 *********************************************************************************************************
-*                                function rest_sale()
+*                                function rest_sale_internetSeg()
 *
 * Description : LLama el servicio Web para guardar una venta
 *               
@@ -3976,6 +3978,7 @@ function enviaInternet(){
 					        telefonoint     = result.rows[0].telefono;
 					        id_ventaint     = result.rows[0].id_venta;
 					        placaint        = result.rows[0].placa;
+					        id_ventaint     = id_ventaint.slice(-6);
 					        console.log("Venta recuperada Internet 1: ");
         					console.log("Cara>> "+ caraint);
         					console.log("Producto>> "+ idproductoint);
@@ -4042,6 +4045,7 @@ function enviaInternetSeg(){
 					        telefonoint     = result.rows[0].telefono;
 					        id_ventaint     = result.rows[0].id_venta;
 					        placaint        = result.rows[0].placa;
+					        id_ventaint     = id_ventaint.slice(-6);
 					        console.log("Venta recuperada Internet 2: ");
         					console.log("Cara>> "+ caraint);
         					console.log("Producto>> "+ idproductoint);
