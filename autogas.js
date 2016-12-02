@@ -743,7 +743,7 @@ function procesaRec(){
                         return console.error('error seleccion MAX venta', err);
                     }else{
                         var last_id = result.rows[0].max;
-                        idVentaRecuperada = last_id;
+                        idVentaRecuperada = String(last_id);
                         client.query(sprintf("SELECT id_venta from venta where id = (select max(id) from venta where enviada = true and id_venta !='NaN');"), function(err,result){
                             done();
                             if(err){
@@ -828,7 +828,7 @@ function procesaRecSeg(){
                         return console.error('error seleccion MAX venta', err);
                     }else{
                         var last_id = result.rows[0].max;
-                        idVentaRecuperada = last_id;
+                        idVentaRecuperada = String(last_id);
                         client.query(sprintf("SELECT id_venta from venta where id = (select max(id) from venta where enviada = true and id_venta !='NaN');"), function(err,result){
                             done();
                             if(err){
