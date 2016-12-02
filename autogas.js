@@ -749,7 +749,7 @@ function procesaRec(){
                             if(err){
                                 return console.error('error seleccion id_venta', err);
                             }else{
-                                id_ventarec = '1'+String(result.rows[0].id_venta); 
+                                id_ventarec = '210'+String(result.rows[0].id_venta); 
                             }
                         });
                         
@@ -833,7 +833,7 @@ function procesaRecSeg(){
                             if(err){
                                 return console.error('error seleccion id_venta', err);
                             }else{
-                                id_ventarec = '1'+String(result.rows[0].id_venta); 
+                                id_ventarec = '210'+String(result.rows[0].id_venta); 
                             }
                         });
                         
@@ -2210,6 +2210,86 @@ function save_sale(){
 *               
 *********************************************************************************************************
 */
+function save_saleInt(){
+    pg.connect(conString, function(err, client, done){                  //conectar a la base de datos
+        if(err){
+            return console.error('error conexion save_sale', err);
+        }else{
+            vol_tabla = parseFloat(volumenint);
+            client.query("SELECT MAX(id) FROM venta;", function(err,result){        //consulto maximo id de venta
+                done();
+                if(err){                    
+                    return console.error('error toma MAX save_sale', err);
+                }else{
+                    console.log(result.rows[0].max);
+                    var last_id = result.rows[0].max;           //Cargo el maximo id de venta
+                    if(codigoError == '0' || codigoError == '2002' || codigoError =='2001'){ //Cargar dato de si fue enviada o no la venta
+                        if(error_local == 0){
+                            b_enviada = 'TRUE';
+                        }else{
+                            b_enviada = 'FALSE';    
+                        }
+                    }else{
+                       b_enviada = 'FALSE';
+                    }
+                    console.log("Save sale>>"+id_ventaint);
+                    client.query(sprintf("UPDATE venta SET (id_venta, id_estacion, serial,  cara, producto, precio, dinero, volumen, fecha, enviada) = ('%1$s','%2$s', '%3$s', '%4$s', '%5$s', '%6$s', '%7$s', '%8$s', '%9$s','%10$s') WHERE id= (SELECT MAX(id) FROM venta WHERE cara = '%4$s');",id_ventaint, idestacionint, serialint, caraint, idproductoint, precioint, dineroint, vol_tabla, fechaint, b_enviada,last_id), function(err,result){
+                        done();
+                        if(err){                            
+                            printrec = 0;
+                            if(caraint == '1'){
+                                imp = 0;
+                                if(printInt ==1){
+                                    print_ventaInt(); //Imprime venta sin insertar en la DB    
+                                }else{
+                                    print_venta(); //Imprime venta sin insertar en la DB
+                                }
+                            }
+                            if(caraint == '2'){
+                                imp2 = 0;
+                                if(printInt2 ==1){
+                                    print_ventaIntSeg(); //Imprime venta sin insertar en la DB    
+                                }else{
+                                    print_ventaSeg(); //Imprime venta sin insertar en la DB
+                                }
+                                
+                            }
+                            return console.error('error actualizacion save_sale', err); 
+                        }else{
+                            printrec = 0;                            
+                            if(caraint == '1'){
+                                imp = 0;
+                                if(printInt ==1){
+                                    print_ventaInt(); //Imprime venta sin insertar en la DB    
+                                }else{
+                                    print_venta(); //Imprime venta sin insertar en la DB
+                                }
+                            }
+                            if(caraint == '2'){
+                                imp2 = 0;
+                                if(printInt2 ==1){
+                                    print_ventaIntSeg(); //Imprime venta sin insertar en la DB    
+                                }else{
+                                    print_ventaSeg(); //Imprime venta sin insertar en la DB
+                                }
+                            }
+                        }
+                    });
+                }                 
+            });  
+        }
+    }); 
+}
+
+
+/*
+*********************************************************************************************************
+*                                function save_sale()
+*
+* Description : Guarda la venta en la base de datos
+*               
+*********************************************************************************************************
+*/
 function save_sale_ef(){
     pg.connect(conString, function(err, client, done){                  //conectar a la base de datos
         if(err){
@@ -2257,6 +2337,60 @@ function save_sale_ef(){
     }); 
 }
 
+
+/*
+*********************************************************************************************************
+*                                function save_sale()
+*
+* Description : Guarda la venta en la base de datos
+*               
+*********************************************************************************************************
+*/
+function save_sale_efInt(){
+    pg.connect(conString, function(err, client, done){                  //conectar a la base de datos
+        if(err){
+            return console.error('error conexion save_sale', err);
+        }else{
+            vol_tabla = parseFloat(volumenint);
+            console.log("Insertado: "+ insertado);
+            client.query(sprintf("INSERT INTO venta  (id_venta, idestacion, serial,  cara, producto, precio, dinero, volumen, fecha, enviada,autorizacion,km) VALUES ('%1$s','%2$s', '%3$s', '%4$s', '%5$s', '%6$s', '%7$s', '%8$s', '%9$s','%10$s','%11$s','%12$s')", id_ventaint, idestacionint, serialint, caraint, idproductoint, precioint, dineroint, vol_tabla, fechaint,b_enviada,'00000000-0000-0000-0000-000000000000',0), function(err,result){
+                done();
+                if(err){                    
+                    printrec = 0;
+                    if(caraint == '1'){
+                        imp = 0;
+                        print_venta(); //Imprime venta sin insertar en la DB
+                    }
+                    if(caraint == '2'){
+                        imp2 = 0;
+                        print_ventaSeg(); //Imprime venta sin insertar en la DB
+                    }
+                    return console.error('error actualizacion save_sale', err); 
+                }else{
+                    if(codigoError == '0' || codigoError == '2002' || codigoError =='2001'){ //Cargar dato de si fue enviada o no la venta
+                        if(error_local == 0){
+                            b_enviada = 'TRUE';
+                        }else{
+                            b_enviada = 'FALSE';    
+                        }
+                    }else{
+                       b_enviada = 'FALSE';
+                    }
+                    console.log("Save sale efectivo>>"+id_venta);
+                    printrec = 0;
+                    if(caraint == '1'){
+                        imp = 0;
+                        print_venta(); //Imprime venta sin insertar en la DB
+                    }
+                    if(caraint == '2'){
+                        imp = 0;
+                        print_ventaSeg(); //Imprime venta sin insertar en la DB
+                    }                    
+                }
+            });
+        }
+    }); 
+}
 
 /*
 *********************************************************************************************************
@@ -2381,7 +2515,7 @@ function rest_sale_internet(){
             b_enviada = 'TRUE';
             error_local = '0';
             if(serialint =='0000000000000000'){
-                save_sale_ef();    
+                save_sale_efInt();    
             }
             if(serialint != '0000000000000000'){
                 save_sale();
@@ -2399,7 +2533,7 @@ function rest_sale_internet(){
             imp2 = 1;
         }
         if(serialint =='0000000000000000'){
-            save_sale_ef();    
+            save_sale_efInt();    
         }
         if(serialint != '0000000000000000'){
             save_sale();
@@ -2461,7 +2595,7 @@ function rest_sale_internetSeg(){
             b_enviada = 'TRUE';
             error_local = '0';
             if(serialint =='0000000000000000'){
-                save_sale_ef();    
+                save_sale_efInt();    
             }
             if(serialint != '0000000000000000'){
                 save_sale();
@@ -2479,7 +2613,7 @@ function rest_sale_internetSeg(){
             imp2 = 1;
         }
         if(serialint =='0000000000000000'){
-            save_sale_ef();    
+            save_sale_efInt();    
         }
         if(serialint != '0000000000000000'){
             save_sale();
