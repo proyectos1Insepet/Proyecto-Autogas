@@ -749,7 +749,7 @@ function procesaRec(){
                             if(err){
                                 return console.error('error seleccion id_venta', err);
                             }else{
-                                id_ventarec = '999'+String(result.rows[0].id_venta); 
+                                id_ventarec = '1'+String(result.rows[0].id_venta); 
                             }
                         });
                         
@@ -833,7 +833,7 @@ function procesaRecSeg(){
                             if(err){
                                 return console.error('error seleccion id_venta', err);
                             }else{
-                                id_ventarec = '999'+String(result.rows[0].id_venta); 
+                                id_ventarec = '1'+String(result.rows[0].id_venta); 
                             }
                         });
                         
@@ -1863,34 +1863,6 @@ function rx_data_mux(data){
     }
     
 }
-/*
-*********************************************************************************************************
-*                                function actualAuto()
-*
-* Description : Guarda la venta en la base de datos
-*               
-*********************************************************************************************************
-*/
-function actualDato(){
-    pg.connect(conString, function(err, client, done){
-            if(err){
-                return console.error('error de conexion 1', err);
-            }else{
-                client.query(sprintf("SELECT autorizacion FROM venta WHERE id=(SELECT MAX(id) FROM venta) AND cara = '%1$s';",String(cara)), function(err,result){
-                    done();
-                    if(err){
-                        return console.error('error tomar autorizacion', err);
-                    }else{
-                        autorizacion = result.rows[0].autorizacion;
-                        console.log(autorizacion);
-                    }                 
-                });   
-            }
-    });
- 
-}
-
-
 
 /*
 *********************************************************************************************************
@@ -2364,7 +2336,75 @@ function save_sale_rec(){
 *********************************************************************************************************
 */
 function rest_sale_internet(){
-    
+    var n_id = idestacionint + id_ventaint;
+    printInt = 1;
+    trycatch(function() {
+        var opt_rest_venta = {
+                url: sprintf(url_save+"/rest/UploadSale/%1$s/%2$s/%3$s/%4$s/%5$s/%6$s/%7$s/%8$s/%9$s/%10$s/%11$s/%12$s", caraint, idproductoint, volumenint, dineroint, precioint, idestacionint, serialint, autorizacionint, n_id, kmint, fechaint, fechaint), /*global autorizacion*//*global idestacion*/
+                method: "POST",
+            };   
+            console.log(n_id);
+        rest_venta(opt_rest_venta, 
+        function(error, response, body) {
+          
+      
+            var elements2 = ds.deserialize(body);
+            var jsonString2 = ds.getJson(elements2);
+        
+            console.log(jsonString2);
+        
+            var result2 = JSON.parse(jsonString2);
+        
+            codigoError        =  result2.cV0001responseREST.codError.value;
+            dineroDia          =  result2.cV0001responseREST.dineroDia.value;           //Resultados enviados por Autogas
+            dineroMes          =  result2.cV0001responseREST.dineroMes.value;
+            dineroSema         =  result2.cV0001responseREST.dineroSema.value;
+            imprime_contadores =  String(result2.cV0001responseREST.imprimeContador.value);              
+            imprime_saldo      =  String(result2.cV0001responseREST.imprimeSaldo.value);
+            //nombreCuenta       =  result2.cV0001responseREST.nombreCuenta.value;
+            placa              =  result2.cV0001responseREST.placa.value;
+            retorno            =  result2.cV0001responseREST.retorno.value;
+            saldo              =  String(result2.cV0001responseREST.saldo.value);
+            visitasDia         =  String(result2.cV0001responseREST.visitasDia.value);
+            visitasMes         =  String(result2.cV0001responseREST.visitasMes.value);
+            visitasSema        =  String(result2.cV0001responseREST.visitasSema.value);
+            volDia             =  String(result2.cV0001responseREST.volDia.value);
+            volMes             =  String(result2.cV0001responseREST.volMes.value);
+            volSema            =  String(result2.cV0001responseREST.volSema.value);
+            if(caraint =='1'){
+                imp =0;
+            }
+            if(caraint =='2'){
+                imp2 =0;
+            }
+            console.log("Termina post");
+            b_enviada = 'TRUE';
+            error_local = '0';
+            if(serialint =='0000000000000000'){
+                save_sale_ef();    
+            }
+            if(serialint != '0000000000000000'){
+                save_sale();
+            }
+        });
+    }, function(err) {
+        console.log(err.stack);
+        console.log("Termina post con error");
+        error_local = '1';
+        b_enviada = 'FALSE'; 
+        if(caraint =='1'){
+            imp = 1;
+        }
+        if(caraint =='2'){
+            imp2 = 1;
+        }
+        if(serialint =='0000000000000000'){
+            save_sale_ef();    
+        }
+        if(serialint != '0000000000000000'){
+            save_sale();
+        }
+    });
 }
 
 /*
@@ -2376,7 +2416,75 @@ function rest_sale_internet(){
 *********************************************************************************************************
 */
 function rest_sale_internetSeg(){
-    
+    var n_id = idestacionint + id_ventaint;
+    printInt2 =1;
+    trycatch(function() {
+        var opt_rest_venta = {
+                url: sprintf(url_save+"/rest/UploadSale/%1$s/%2$s/%3$s/%4$s/%5$s/%6$s/%7$s/%8$s/%9$s/%10$s/%11$s/%12$s", caraint, idproductoint, volumenint, dineroint, precioint, idestacionint, serialint, autorizacionint, n_id, kmint, fechaint, fechaint), /*global autorizacion*//*global idestacion*/
+                method: "POST",
+            };   
+            console.log(n_id);
+        rest_venta(opt_rest_venta, 
+        function(error, response, body) {
+          
+      
+            var elements2 = ds.deserialize(body);
+            var jsonString2 = ds.getJson(elements2);
+        
+            console.log(jsonString2);
+        
+            var result2 = JSON.parse(jsonString2);
+        
+            codigoError        =  result2.cV0001responseREST.codError.value;
+            dineroDia          =  result2.cV0001responseREST.dineroDia.value;           //Resultados enviados por Autogas
+            dineroMes          =  result2.cV0001responseREST.dineroMes.value;
+            dineroSema         =  result2.cV0001responseREST.dineroSema.value;
+            imprime_contadores =  String(result2.cV0001responseREST.imprimeContador.value);              
+            imprime_saldo      =  String(result2.cV0001responseREST.imprimeSaldo.value);
+            //nombreCuenta       =  result2.cV0001responseREST.nombreCuenta.value;
+            placa              =  result2.cV0001responseREST.placa.value;
+            retorno            =  result2.cV0001responseREST.retorno.value;
+            saldo              =  String(result2.cV0001responseREST.saldo.value);
+            visitasDia         =  String(result2.cV0001responseREST.visitasDia.value);
+            visitasMes         =  String(result2.cV0001responseREST.visitasMes.value);
+            visitasSema        =  String(result2.cV0001responseREST.visitasSema.value);
+            volDia             =  String(result2.cV0001responseREST.volDia.value);
+            volMes             =  String(result2.cV0001responseREST.volMes.value);
+            volSema            =  String(result2.cV0001responseREST.volSema.value);
+            if(caraint =='1'){
+                imp =0;
+            }
+            if(caraint =='2'){
+                imp2 =0;
+            }
+            console.log("Termina post");
+            b_enviada = 'TRUE';
+            error_local = '0';
+            if(serialint =='0000000000000000'){
+                save_sale_ef();    
+            }
+            if(serialint != '0000000000000000'){
+                save_sale();
+            }
+        });
+    }, function(err) {
+        console.log(err.stack);
+        console.log("Termina post con error");
+        error_local = '1';
+        b_enviada = 'FALSE'; 
+        if(caraint =='1'){
+            imp = 1;
+        }
+        if(caraint =='2'){
+            imp2 = 1;
+        }
+        if(serialint =='0000000000000000'){
+            save_sale_ef();    
+        }
+        if(serialint != '0000000000000000'){
+            save_sale();
+        }
+    });
 }
 
 
@@ -3706,28 +3814,6 @@ function print_ventaIntSeg(){
         imp =1;
     }
 }
-/*
-*********************************************************************************************************
-*                                function actualAuto()
-*
-* Description : Guarda la venta en la base de datos
-*               
-*********************************************************************************************************
-*/
-function actualAuto(){
- //console.log("en la funcion_count");
- if(enable_count==1){
-  console.log("contandoL1...");  
-      contador=contador-1;
-     if(contador==0){
-         console.log("!deja de contarL1??");
-      enable_count=0;         
-     }else{
-         actualAuto();
-     }
- }
-}
-
 
 
 /*
@@ -3786,82 +3872,14 @@ function enviaInternet(){
         					console.log("Telefono>> "+ telefonoint);
 		                    console.log("Venta por subir cara 1");
 		                    imp = 1;
-                            var n_id = idestacionint + id_ventaint;
-                            printInt = 1;
-                            trycatch(function() {
-                                var opt_rest_venta = {
-                                        url: sprintf(url_save+"/rest/UploadSale/%1$s/%2$s/%3$s/%4$s/%5$s/%6$s/%7$s/%8$s/%9$s/%10$s/%11$s/%12$s", caraint, idproductoint, volumenint, dineroint, precioint, idestacionint, serialint, autorizacionint, n_id, kmint, fechaint, fechaint), /*global autorizacion*//*global idestacion*/
-                                        method: "POST",
-                                    };   
-                                    console.log(n_id);
-                                rest_venta(opt_rest_venta, 
-                                function(error, response, body) {
-                                  
-                              
-                                    var elements2 = ds.deserialize(body);
-                                    var jsonString2 = ds.getJson(elements2);
-                                
-                                    console.log(jsonString2);
-                                
-                                    var result2 = JSON.parse(jsonString2);
-                                
-                                    codigoError        =  result2.cV0001responseREST.codError.value;
-                                    dineroDia          =  result2.cV0001responseREST.dineroDia.value;           //Resultados enviados por Autogas
-                                    dineroMes          =  result2.cV0001responseREST.dineroMes.value;
-                                    dineroSema         =  result2.cV0001responseREST.dineroSema.value;
-                                    imprime_contadores =  String(result2.cV0001responseREST.imprimeContador.value);              
-                                    imprime_saldo      =  String(result2.cV0001responseREST.imprimeSaldo.value);
-                                    //nombreCuenta       =  result2.cV0001responseREST.nombreCuenta.value;
-                                    placa              =  result2.cV0001responseREST.placa.value;
-                                    retorno            =  result2.cV0001responseREST.retorno.value;
-                                    saldo              =  String(result2.cV0001responseREST.saldo.value);
-                                    visitasDia         =  String(result2.cV0001responseREST.visitasDia.value);
-                                    visitasMes         =  String(result2.cV0001responseREST.visitasMes.value);
-                                    visitasSema        =  String(result2.cV0001responseREST.visitasSema.value);
-                                    volDia             =  String(result2.cV0001responseREST.volDia.value);
-                                    volMes             =  String(result2.cV0001responseREST.volMes.value);
-                                    volSema            =  String(result2.cV0001responseREST.volSema.value);
-                                    if(caraint =='1'){
-                                        imp =0;
-                                    }
-                                    if(caraint =='2'){
-                                        imp2 =0;
-                                    }
-                                    console.log("Termina post");
-                                    b_enviada = 'TRUE';
-                                    error_local = '0';
-                                    if(serialint =='0000000000000000'){
-                                        save_sale_ef();    
-                                    }
-                                    if(serialint != '0000000000000000'){
-                                        save_sale();
-                                    }
-                                });
-                            }, function(err) {
-                                console.log(err.stack);
-                                console.log("Termina post con error");
-                                error_local = '1';
-                                b_enviada = 'FALSE'; 
-                                if(caraint =='1'){
-                                    imp = 1;
-                                }
-                                if(caraint =='2'){
-                                    imp2 = 1;
-                                }
-                                if(serialint =='0000000000000000'){
-                                    save_sale_ef();    
-                                }
-                                if(serialint != '0000000000000000'){
-                                    save_sale();
-                                }
-                            });   
+                            rest_sale_internet();  
+                            setTimeout(enviaInternetSeg(),5000);
 		                }
 		            }
 	            }
             });
         }
     }); 
-    setTimeout(enviaInternetSeg,10000);
 }
 
 /*
@@ -3920,75 +3938,8 @@ function enviaInternetSeg(){
         					console.log("Telefono>> "+ telefonoint);
 		                    console.log("Venta por subir cara 2");
 		                    imp2 = 1;
-                            var n_id = idestacionint + id_ventaint;
-                            printInt2 =1;
-                            trycatch(function() {
-                                var opt_rest_venta = {
-                                        url: sprintf(url_save+"/rest/UploadSale/%1$s/%2$s/%3$s/%4$s/%5$s/%6$s/%7$s/%8$s/%9$s/%10$s/%11$s/%12$s", caraint, idproductoint, volumenint, dineroint, precioint, idestacionint, serialint, autorizacionint, n_id, kmint, fechaint, fechaint), /*global autorizacion*//*global idestacion*/
-                                        method: "POST",
-                                    };   
-                                    console.log(n_id);
-                                rest_venta(opt_rest_venta, 
-                                function(error, response, body) {
-                                  
-                              
-                                    var elements2 = ds.deserialize(body);
-                                    var jsonString2 = ds.getJson(elements2);
-                                
-                                    console.log(jsonString2);
-                                
-                                    var result2 = JSON.parse(jsonString2);
-                                
-                                    codigoError        =  result2.cV0001responseREST.codError.value;
-                                    dineroDia          =  result2.cV0001responseREST.dineroDia.value;           //Resultados enviados por Autogas
-                                    dineroMes          =  result2.cV0001responseREST.dineroMes.value;
-                                    dineroSema         =  result2.cV0001responseREST.dineroSema.value;
-                                    imprime_contadores =  String(result2.cV0001responseREST.imprimeContador.value);              
-                                    imprime_saldo      =  String(result2.cV0001responseREST.imprimeSaldo.value);
-                                    //nombreCuenta       =  result2.cV0001responseREST.nombreCuenta.value;
-                                    placa              =  result2.cV0001responseREST.placa.value;
-                                    retorno            =  result2.cV0001responseREST.retorno.value;
-                                    saldo              =  String(result2.cV0001responseREST.saldo.value);
-                                    visitasDia         =  String(result2.cV0001responseREST.visitasDia.value);
-                                    visitasMes         =  String(result2.cV0001responseREST.visitasMes.value);
-                                    visitasSema        =  String(result2.cV0001responseREST.visitasSema.value);
-                                    volDia             =  String(result2.cV0001responseREST.volDia.value);
-                                    volMes             =  String(result2.cV0001responseREST.volMes.value);
-                                    volSema            =  String(result2.cV0001responseREST.volSema.value);
-                                    if(caraint =='1'){
-                                        imp =0;
-                                    }
-                                    if(caraint =='2'){
-                                        imp2 =0;
-                                    }
-                                    console.log("Termina post");
-                                    b_enviada = 'TRUE';
-                                    error_local = '0';
-                                    if(serialint =='0000000000000000'){
-                                        save_sale_ef();    
-                                    }
-                                    if(serialint != '0000000000000000'){
-                                        save_sale();
-                                    }
-                                });
-                            }, function(err) {
-                                console.log(err.stack);
-                                console.log("Termina post con error");
-                                error_local = '1';
-                                b_enviada = 'FALSE'; 
-                                if(caraint =='1'){
-                                    imp = 1;
-                                }
-                                if(caraint =='2'){
-                                    imp2 = 1;
-                                }
-                                if(serialint =='0000000000000000'){
-                                    save_sale_ef();    
-                                }
-                                if(serialint != '0000000000000000'){
-                                    save_sale();
-                                }
-                            });   
+                            rest_sale_internetSeg();   
+                            
 		                }
 		            }
 	            }
@@ -4009,6 +3960,7 @@ function enviaInternetSeg(){
 function watchful(){
     console.log("Vigilando");
     enviaInternet();
+    enviaInternetSeg();
     var f = new Date();
     if((f.getHours()=='14')&&(f.getMinutes()=='44')&&(corte_ok==0)){
         printport.write('MOMENTO DE CORTE\n');
