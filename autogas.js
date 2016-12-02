@@ -749,7 +749,7 @@ function procesaRec(){
                             if(err){
                                 return console.error('error seleccion id_venta', err);
                             }else{
-                                id_ventarec = '210'+String(result.rows[0].id_venta); 
+                                id_ventarec = '200'+String(result.rows[0].id_venta); 
                             }
                         });
                         
@@ -833,7 +833,7 @@ function procesaRecSeg(){
                             if(err){
                                 return console.error('error seleccion id_venta', err);
                             }else{
-                                id_ventarec = '210'+String(result.rows[0].id_venta); 
+                                id_ventarec = '200'+String(result.rows[0].id_venta); 
                             }
                         });
                         
@@ -1176,12 +1176,12 @@ function rx_data_mux(data){
                     muxport.write('1');             //Limpia estado del mux e inicia pantalla
                     printport.write('\nCierre turno');
                     if(permite == 0){
-                        printport.write('\nEn cara: A');    
+                        printport.write('\nEn cara: 1');    
                     }
                     if(permite2 == 0){
-                        printport.write('\nEn cara: B');    
+                        printport.write('\nEn cara: 2');    
                     }
-                    printport.write('\npara iniciar venta.\n\n\n\n\n\n\n\n\n\n\n');
+                    printport.write('\npara iniciar venta.\n\n\n\n\n\n\n');
                     muxport.write('*');
                 }else{
                     var a = sprintf(url_auto+"/rest/Authorize/%1$s/%2$s/%3$s/%4$s/%5$s/%6$s/%7$s", serial, idproducto, idestacion, precio, tipopreset, preset, km);
@@ -2239,19 +2239,12 @@ function save_saleInt(){
                             printrec = 0;
                             if(caraint == '1'){
                                 imp = 0;
-                                if(printInt ==1){
-                                    print_ventaInt(); //Imprime venta sin insertar en la DB    
-                                }else{
-                                    print_venta(); //Imprime venta sin insertar en la DB
-                                }
+                                print_ventaInt(); //Imprime venta sin insertar en la DB    
                             }
                             if(caraint == '2'){
                                 imp2 = 0;
-                                if(printInt2 ==1){
-                                    print_ventaIntSeg(); //Imprime venta sin insertar en la DB    
-                                }else{
-                                    print_ventaSeg(); //Imprime venta sin insertar en la DB
-                                }
+                                print_ventaIntSeg(); //Imprime venta sin insertar en la DB    
+                                
                                 
                             }
                             return console.error('error actualizacion save_sale', err); 
@@ -2259,19 +2252,13 @@ function save_saleInt(){
                             printrec = 0;                            
                             if(caraint == '1'){
                                 imp = 0;
-                                if(printInt ==1){
-                                    print_ventaInt(); //Imprime venta sin insertar en la DB    
-                                }else{
-                                    print_venta(); //Imprime venta sin insertar en la DB
-                                }
+                                print_ventaInt(); //Imprime venta sin insertar en la DB    
+                                
                             }
                             if(caraint == '2'){
                                 imp2 = 0;
-                                if(printInt2 ==1){
-                                    print_ventaIntSeg(); //Imprime venta sin insertar en la DB    
-                                }else{
-                                    print_ventaSeg(); //Imprime venta sin insertar en la DB
-                                }
+                                print_ventaIntSeg(); //Imprime venta sin insertar en la DB    
+                                
                             }
                         }
                     });
@@ -2359,11 +2346,11 @@ function save_sale_efInt(){
                     printrec = 0;
                     if(caraint == '1'){
                         imp = 0;
-                        print_venta(); //Imprime venta sin insertar en la DB
+                        print_ventaInt(); //Imprime venta sin insertar en la DB
                     }
                     if(caraint == '2'){
                         imp2 = 0;
-                        print_ventaSeg(); //Imprime venta sin insertar en la DB
+                        print_ventaIntSeg(); //Imprime venta sin insertar en la DB
                     }
                     return console.error('error actualizacion save_sale', err); 
                 }else{
@@ -2380,11 +2367,11 @@ function save_sale_efInt(){
                     printrec = 0;
                     if(caraint == '1'){
                         imp = 0;
-                        print_venta(); //Imprime venta sin insertar en la DB
+                        print_ventaInt(); //Imprime venta sin insertar en la DB
                     }
                     if(caraint == '2'){
                         imp = 0;
-                        print_ventaSeg(); //Imprime venta sin insertar en la DB
+                        print_ventaIntSeg(); //Imprime venta sin insertar en la DB
                     }                    
                 }
             });
@@ -2518,7 +2505,7 @@ function rest_sale_internet(){
                 save_sale_efInt();    
             }
             if(serialint != '0000000000000000'){
-                save_sale();
+                save_saleInt();
             }
         });
     }, function(err) {
@@ -2532,11 +2519,8 @@ function rest_sale_internet(){
         if(caraint =='2'){
             imp2 = 1;
         }
-        if(serialint =='0000000000000000'){
-            save_sale_efInt();    
-        }
         if(serialint != '0000000000000000'){
-            save_sale();
+            save_saleInt();
         }
     });
 }
@@ -2598,7 +2582,7 @@ function rest_sale_internetSeg(){
                 save_sale_efInt();    
             }
             if(serialint != '0000000000000000'){
-                save_sale();
+                save_saleInt();
             }
         });
     }, function(err) {
@@ -2612,11 +2596,8 @@ function rest_sale_internetSeg(){
         if(caraint =='2'){
             imp2 = 1;
         }
-        if(serialint =='0000000000000000'){
-            save_sale_efInt();    
-        }
         if(serialint != '0000000000000000'){
-            save_sale();
+            save_saleInt();
         }
     });
 }
@@ -3116,6 +3097,7 @@ function print_venta(){
     } 
         console.log("FIN IMPRIMIENDO");
         imp =1;
+        imprime_saldo = 0;
     }
 }
 
@@ -3407,6 +3389,7 @@ function print_ventaSeg(){
         } 
         console.log("FIN IMPRIMIENDO");
         imp2 =1;
+        imprime_saldo = 0;
     }
     
 }
@@ -3451,7 +3434,7 @@ function print_ventaInt(){
                 printport.write('Dinero sem:  $' + dineroSema +'\n');
                 printport.write('Dinero mes:  $' + dineroMes +'\n\n'); 
             }
-            if(serial !='0000000000000000'){
+            if(serialint !='0000000000000000'){
                 printport.write('Empresa:\n');
                 printport.write(String(nombreCuentaint) + '\n');
                 printport.write('Direccion:\n');
@@ -3621,7 +3604,7 @@ function print_ventaInt(){
                     printport.write('Dinero sem:  $' + dineroSema +'\n');
                     printport.write('Dinero mes:  $' + dineroMes +'\n\n'); 
                 }
-                if(serial !='0000000000000000'){
+                if(serialint !='0000000000000000'){
                     printport.write('Empresa:\n');
                     printport.write(String(nombreCuentaint) + '\n');
                     printport.write('Direccion:\n');
@@ -3640,7 +3623,7 @@ function print_ventaInt(){
                 
                 printport.write('Posicion: ' + caraint + '\n'); /*global cara*/
                 printport.write('Producto: ');
-                switch(idproducto){
+                switch(idproductoint){
                     case '1':
                        printport.write('Diesel\n'); 
                     break;
@@ -3676,6 +3659,7 @@ function print_ventaInt(){
 		} 
         console.log("FIN IMPRIMIENDO");
         imp =1;
+        imprime_saldo = 0;
     }
 }
 
@@ -3721,7 +3705,7 @@ function print_ventaIntSeg(){
                 printport.write('Dinero sem:  $' + dineroSema +'\n');
                 printport.write('Dinero mes:  $' + dineroMes +'\n\n'); 
             }
-            if(serial !='0000000000000000'){
+            if(serialint !='0000000000000000'){
                 printport.write('Empresa:\n');
                 printport.write(String(nombreCuentaint) + '\n');
                 printport.write('Direccion:\n');
@@ -3739,7 +3723,7 @@ function print_ventaIntSeg(){
             }            
             printport.write('Posicion: ' + caraint + '\n');
             printport.write('Producto: ');
-            switch(idproducto){
+            switch(idproductoint){
                 case '1':
                    printport.write('Diesel\n'); 
                 break;
@@ -3905,13 +3889,13 @@ function print_ventaIntSeg(){
                     printport.write('Placa: ' + placaint +'\n');
                     printport.write('Km   : ' + kmint +'\n');/*global km*/
                     if(imprime_saldo == 1){        
-                        printport.write('Saldo: $' + saldoint + '\n\n');
+                        printport.write('Saldo: $' + saldo + '\n\n');
                     }
                 }
                 
                 printport.write('Posicion: ' + caraint + '\n'); /*global cara*/
                 printport.write('Producto: ');
-                switch(idproducto){
+                switch(idproductoint){
                     case '1':
                        printport.write('Diesel\n'); 
                     break;
@@ -3930,6 +3914,7 @@ function print_ventaIntSeg(){
                 }
                 precio1 = parseFloat(precioint);/*global precio*/
                 printport.write('PPU     : $' + String(precio1) + '\n');
+                var volumen1;
                 volumen[3]=46;
                 volumen1 = parseFloat(volumenint); /*global volumen*/
                 printport.write('Volumen : G' + volumen1 + '\n');
@@ -3946,6 +3931,7 @@ function print_ventaIntSeg(){
 		} 
         console.log("FIN IMPRIMIENDO");
         imp =1;
+        imprime_saldo = 0;
     }
 }
 
@@ -4007,13 +3993,13 @@ function enviaInternet(){
 		                    console.log("Venta por subir cara 1");
 		                    imp = 1;
                             rest_sale_internet();  
-                            setTimeout(enviaInternetSeg(),5000);
 		                }
 		            }
 	            }
             });
         }
     }); 
+    setTimeout(enviaInternetSeg(),1000);
 }
 
 /*
@@ -4094,7 +4080,6 @@ function enviaInternetSeg(){
 function watchful(){
     console.log("Vigilando");
     enviaInternet();
-    enviaInternetSeg();
     var f = new Date();
     if((f.getHours()=='14')&&(f.getMinutes()=='44')&&(corte_ok==0)){
         printport.write('MOMENTO DE CORTE\n');
