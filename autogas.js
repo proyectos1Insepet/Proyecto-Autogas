@@ -748,14 +748,15 @@ function procesaRec(){
                     if(err){
                         return console.error('error seleccion MAX venta', err);
                     }else{
-                        var last_id = result.rows[0].max;
-                        idVentaRecuperada = String(last_id);
+                        var last_id;
+                        last_id = String(result.rows[0].max);
                         client.query(sprintf("SELECT id_venta from venta where id = (select max(id) from venta where enviada = true and id_venta !='null');"), function(err,result){
                             done();
                             if(err){
                                 return console.error('error seleccion id_venta', err);
                             }else{
-                                idVentaRecuperada = idVentaRecuperada.slice(-7);
+                                idVentaRecuperada = last_id.slice(-7);
+                                console.log(last_id);
                                 id_ventarec = '200'+String(idVentaRecuperada); 
                             }
                         });
@@ -1867,6 +1868,8 @@ function rx_data_mux(data){
                 }
                 console.log('OK'); 
             break; 
+            default:
+                console.log("CASO DEFAULT");
         }
     }
     
@@ -2330,7 +2333,7 @@ function save_sale_efInt(){
         }else{
             vol_tabla = parseFloat(volumenint);
             console.log("Insertado: "+ insertado);
-            client.query(sprintf("INSERT INTO venta  (id_venta, idestacion, serial,  cara, producto, precio, dinero, volumen, fecha, enviada,autorizacion,km) VALUES ('%1$s','%2$s', '%3$s', '%4$s', '%5$s', '%6$s', '%7$s', '%8$s', '%9$s','%10$s','%11$s','%12$s')", id_ventaint, idestacionint, serialint, caraint, idproductoint, precioint, dineroint, vol_tabla, fechaint,b_enviada,'00000000-0000-0000-0000-000000000000',0), function(err,result){
+            client.query(sprintf("UPDATE venta SET ( cara, enviada,autorizacion,km)  = ('%1$s','%2$s', '%3$s', '%4$s') WHERE cara = '%1$s'", caraint, b_enviada,'00000000-0000-0000-0000-000000000000',0), function(err,result){
                 done();
                 if(err){                    
                     printrec = 0;
