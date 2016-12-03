@@ -755,7 +755,7 @@ function procesaRec(){
                             if(err){
                                 return console.error('error seleccion id_venta', err);
                             }else{
-                                idVentaRecuperada = idVentaRecuperada.slice(-6);
+                                idVentaRecuperada = idVentaRecuperada.slice(-7);
                                 id_ventarec = '200'+String(idVentaRecuperada); 
                             }
                         });
@@ -840,7 +840,7 @@ function procesaRecSeg(){
                             if(err){
                                 return console.error('error seleccion id_venta', err);
                             }else{
-                                id_ventarec = idVentaRecuperada.slice(-6);
+                                id_ventarec = idVentaRecuperada.slice(-7);
                                 id_ventarec = '200'+String(result.rows[0].id_venta); 
                             }
                         });
@@ -2167,39 +2167,22 @@ function save_sale(){
                             printrec = 0;
                             if(cara == '1'){
                                 imp = 0;
-                                if(printInt ==1){
-                                    print_ventaInt(); //Imprime venta sin insertar en la DB    
-                                }else{
-                                    print_venta(); //Imprime venta sin insertar en la DB
-                                }
+                                print_venta(); //Imprime venta sin insertar en la DB
                             }
                             if(cara == '2'){
                                 imp2 = 0;
-                                if(printInt2 ==1){
-                                    print_ventaIntSeg(); //Imprime venta sin insertar en la DB    
-                                }else{
-                                    print_ventaSeg(); //Imprime venta sin insertar en la DB
-                                }
-                                
+                                print_ventaSeg(); //Imprime venta sin insertar en la D
                             }
                             return console.error('error actualizacion save_sale', err); 
                         }else{
                             printrec = 0;                            
                             if(cara == '1'){
                                 imp = 0;
-                                if(printInt ==1){
-                                    print_ventaInt(); //Imprime venta sin insertar en la DB    
-                                }else{
-                                    print_venta(); //Imprime venta sin insertar en la DB
-                                }
+                                print_venta(); //Imprime venta sin insertar en la DB
                             }
                             if(cara == '2'){
                                 imp2 = 0;
-                                if(printInt2 ==1){
-                                    print_ventaIntSeg(); //Imprime venta sin insertar en la DB    
-                                }else{
-                                    print_ventaSeg(); //Imprime venta sin insertar en la DB
-                                }
+                                print_ventaSeg(); //Imprime venta sin insertar en la DB
                             }
                         }
                     });
@@ -2332,7 +2315,6 @@ function save_sale_ef(){
     }); 
 }
 
-
 /*
 *********************************************************************************************************
 *                                function save_sale()
@@ -2438,7 +2420,7 @@ function save_sale_rec(){
 
 /*
 *********************************************************************************************************
-*                                function rest_sale()
+*                                function rest_sale_internet()
 *
 * Description : LLama el servicio Web para guardar una venta
 *               
@@ -2451,8 +2433,7 @@ function rest_sale_internet(){
         var opt_rest_venta = {
                 url: sprintf(url_save+"/rest/UploadSale/%1$s/%2$s/%3$s/%4$s/%5$s/%6$s/%7$s/%8$s/%9$s/%10$s/%11$s/%12$s", caraint, idproductoint, volumenint, dineroint, precioint, idestacionint, serialint, autorizacionint, n_id, kmint, fechaint, fechaint), /*global autorizacion*//*global idestacion*/
                 method: "POST",
-            };   
-            console.log(n_id);
+            };               
         rest_venta(opt_rest_venta, 
         function(error, response, body) {
           
@@ -2528,8 +2509,7 @@ function rest_sale_internetSeg(){
         var opt_rest_venta = {
                 url: sprintf(url_save+"/rest/UploadSale/%1$s/%2$s/%3$s/%4$s/%5$s/%6$s/%7$s/%8$s/%9$s/%10$s/%11$s/%12$s", caraint, idproductoint, volumenint, dineroint, precioint, idestacionint, serialint, autorizacionint, n_id, kmint, fechaint, fechaint), /*global autorizacion*//*global idestacion*/
                 method: "POST",
-            };   
-            console.log(n_id);
+            };               
         rest_venta(opt_rest_venta, 
         function(error, response, body) {
           
@@ -2590,11 +2570,6 @@ function rest_sale_internetSeg(){
     });
 }
 
-
-
-
-
-
 /*
 *********************************************************************************************************
 *                                function rest_sale()
@@ -2605,11 +2580,6 @@ function rest_sale_internetSeg(){
 */
 function rest_sale(){
     var n_id = idestacion + id_venta;
-    if(cara =='1'){
-        printInt = 0;
-    }else{
-        printInt2 = 0;
-    }
     trycatch(function() {
         var opt_rest_venta = {
                 url: sprintf(url_save+"/rest/UploadSale/%1$s/%2$s/%3$s/%4$s/%5$s/%6$s/%7$s/%8$s/%9$s/%10$s/%11$s/%12$s", cara, idproducto, volumen, dinero, precio, idestacion, serial, autorizacion, n_id, km, fecha, fecha), /*global autorizacion*//*global idestacion*/
@@ -3665,7 +3635,6 @@ function print_ventaSeg(){
 *********************************************************************************************************
 */
 
-
 function print_ventaInt(){
     console.log("IMPRIMIENDO INTERNET 1");
     console.log(codigoError);
@@ -3903,8 +3872,7 @@ function print_ventaInt(){
                     break;                 
                 }
                 precio1 = parseFloat(precioint);/*global precio*/
-                printport.write('PPU     : $' + String(precio1) + '\n');
-                volumen[3]=46;
+                printport.write('PPU     : $' + String(precio1) + '\n');                
                 var volumen1;
                 volumen1 = parseFloat(volumenint); /*global volumen*/
                 printport.write('Volumen : G' + volumen1 + '\n');
@@ -3919,13 +3887,11 @@ function print_ventaInt(){
             }
             //mod ayer
 		} 
-        console.log("FIN IMPRIMIENDO");
+        console.log("FIN IMPRIMIENDO INT");
         imp =1;
         imprime_saldo = 0;
     }
 }
-
-
 
 /*
 *********************************************************************************************************
@@ -3940,7 +3906,7 @@ function print_ventaInt(){
 function print_ventaIntSeg(){
     console.log("IMPRIMIENDO INTERNET 2");
     console.log(codigoError);
-    if(imp == 0){                
+    if(imp2 == 0){                
         if(codigoError == '0'){
             muxport.write('BBB');
             muxport.write('E');
@@ -4175,9 +4141,8 @@ function print_ventaIntSeg(){
                     break;                 
                 }
                 precio1 = parseFloat(precioint);/*global precio*/
-                printport.write('PPU     : $' + String(precio1) + '\n');
-                var volumen1;
-                volumen[3]=46;
+                printport.write('PPU     : $' + String(precio1) + '\n');                
+				var volumen1;                
                 volumen1 = parseFloat(volumenint); /*global volumen*/
                 printport.write('Volumen : G' + volumen1 + '\n');
                 dinero1 = parseFloat(dineroint); /*global dinero*/
@@ -4191,12 +4156,11 @@ function print_ventaIntSeg(){
             }
             //mod ayer
 		} 
-        console.log("FIN IMPRIMIENDO");
-        imp =1;
+        console.log("FIN IMPRIMIENDO INT 2");
+        imp2 =1;
         imprime_saldo = 0;
     }
 }
-
 
 /*
 *********************************************************************************************************
@@ -4211,7 +4175,7 @@ function enviaInternet(){
         if(err){
             return console.error('error conexion save_sale', err);
         }else{
-            client.query("SELECT producto,volumen, dinero, precio, idestacion,serial,autorizacion,id_venta,km,fecha, enviada,nombrecuenta,direccion,telefono FROM venta where id = (SELECT MAX(id) FROM venta WHERE cara = '1');", function(err,result){
+            client.query("SELECT producto,volumen, dinero, precio, idestacion,serial,autorizacion,id_venta,km,fecha, enviada,nombrecuenta,direccion,telefono,placa FROM venta where id = (SELECT MAX(id) FROM venta WHERE cara = '1');", function(err,result){
 	            done();
 	            if(err){
 		        return console.error('error seleccion MAX venta', err);
@@ -4238,7 +4202,7 @@ function enviaInternet(){
 					        telefonoint     = result.rows[0].telefono;
 					        id_ventaint     = result.rows[0].id_venta;
 					        placaint        = result.rows[0].placa;
-					        id_ventaint     = id_ventaint.slice(-6);
+					        id_ventaint     = id_ventaint.slice(-7);
 					        console.log("Venta recuperada Internet 1: ");
         					console.log("Cara>> "+ caraint);
         					console.log("Producto>> "+ idproductoint);
@@ -4255,6 +4219,7 @@ function enviaInternet(){
         					console.log("Telefono>> "+ telefonoint);
 		                    console.log("Venta por subir cara 1");
 		                    imp = 1;
+		                    imprime_saldo = 0;
                             rest_sale_internet();  
 		                }
 		            }
@@ -4305,7 +4270,7 @@ function enviaInternetSeg(){
 					        telefonoint     = result.rows[0].telefono;
 					        id_ventaint     = result.rows[0].id_venta;
 					        placaint        = result.rows[0].placa;
-					        id_ventaint     = id_ventaint.slice(-6);
+					        id_ventaint     = id_ventaint.slice(-7);
 					        console.log("Venta recuperada Internet 2: ");
         					console.log("Cara>> "+ caraint);
         					console.log("Producto>> "+ idproductoint);
@@ -4322,8 +4287,8 @@ function enviaInternetSeg(){
         					console.log("Telefono>> "+ telefonoint);
 		                    console.log("Venta por subir cara 2");
 		                    imp2 = 1;
-                            rest_sale_internetSeg();   
-                            
+		                    imprime_saldo = 0;
+                            rest_sale_internetSeg();                               
 		                }
 		            }
 	            }
