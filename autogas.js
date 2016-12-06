@@ -755,9 +755,12 @@ function procesaRec(){
                             if(err){
                                 return console.error('error seleccion id_venta', err);
                             }else{
-                                idVentaRecuperada = last_id.slice(-7);
-                                console.log(last_id);
-                                id_ventarec = '200'+String(idVentaRecuperada); 
+                                id_ventarec = result.rows[0].id_venta;
+                                id_ventarec = id_ventarec.slice(-7);
+                                id_ventarec = '200'+String(id_ventarec); 
+                                idVentaRecuperada = last_id;
+                                console.log(id_ventarec);
+                                console.log(idVentaRecuperada);
                             }
                         });
                         
@@ -791,7 +794,7 @@ function procesaRec(){
                                     dineroRecuperado = parseInt(dineroRecuperado, 10);
                                     console.log("Venta Recuperada: "+dineroRecuperado );
                                     console.log("Cara" + cara);
-                                    client.query(sprintf("UPDATE venta SET (volumen,dinero,enviada) = (%1$s,%2$s,%3$s) WHERE id='%4$s'",vol_tabla,dineroRecuperado,true,last_id), function(err,result){
+                                    client.query(sprintf("UPDATE venta SET (volumen,dinero,enviada,id_venta) = (%1$s,%2$s,%3$s,%5$s) WHERE id='%4$s'",vol_tabla,dineroRecuperado,true,last_id,id_ventarec), function(err,result){
                                         done();
                                         if(err){
                                             return console.error('error actualizacion venta recuperada', err); 
@@ -876,7 +879,7 @@ function procesaRecSeg(){
                                     dineroRecuperado = parseInt(dineroRecuperado, 10);
                                     console.log("Venta Recuperada: "+dineroRecuperado );
                                     console.log("Cara" + cara);
-                                    client.query(sprintf("UPDATE venta SET (volumen,dinero,enviada) = (%1$s,%2$s,%3$s) WHERE id='%4$s'",vol_tabla,dineroRecuperado,true,last_id), function(err,result){
+                                    client.query(sprintf("UPDATE venta SET (volumen,dinero,enviada,id_venta) = (%1$s,%2$s,%3$s,'%4$s') WHERE id='%5$s'",vol_tabla,dineroRecuperado,true,id_ventarec,last_id), function(err,result){
                                         done();
                                         if(err){
                                             return console.error('error actualizacion venta recuperada', err); 
@@ -2673,6 +2676,7 @@ function rest_sale_rec(){
 				if(err){
 					return console.error('error de envio recuperada', err); 
 				}else{
+				    console.log("ID VENTA REST"+id_ventarec);
 					cararec         = result.rows[0].cara;
 					idproductorec   = result.rows[0].producto;
 					volumenrec      = String(result.rows[0].volumen);
@@ -2879,7 +2883,11 @@ function print_venta(){
         else{
             muxport.write('BBB');
             muxport.write('E');
-            muxport.write(String(cara));
+            if(printrec == 1){
+                muxport.write(String(cararec));
+            }else{
+                muxport.write(String(cara));   
+            }
             muxport.write('3');                         //Error de Operacion
             muxport.write('*');        
             //printport.write('\n\nERROR: \n');
@@ -4182,7 +4190,8 @@ function enviaInternet(){
 		            subeInternet = result.rows[0].enviada;
 		            console.log("Internet>>" + subeInternet);
 		            if (subeInternet){
-		                console.log("No hay que subir venta");
+		                console.log("No hay que subir venta 1");
+		                setTimeout(enviaInternetSeg(),1000);
 		            }else{
 		                if(result.rows[0].volumen != null){
 		                    caraint         = '1';
@@ -4227,7 +4236,6 @@ function enviaInternet(){
             });
         }
     }); 
-    setTimeout(enviaInternetSeg(),1000);
 }
 
 /*
