@@ -2227,7 +2227,7 @@ function save_saleInt(){
                        b_enviada = 'FALSE';
                     }
                     console.log("Save sale>>"+id_ventaint);
-                    client.query(sprintf("UPDATE venta SET (id_venta, id_estacion, serial,  cara, producto, precio, dinero, volumen, fecha, enviada) = ('%1$s','%2$s', '%3$s', '%4$s', '%5$s', '%6$s', '%7$s', '%8$s', '%9$s','%10$s') WHERE id= (SELECT MAX(id) FROM venta WHERE cara = '%4$s');",id_ventaint, idestacionint, serialint, caraint, idproductoint, precioint, dineroint, vol_tabla, fechaint, b_enviada,last_id), function(err,result){
+                    client.query(sprintf("UPDATE venta SET (id_venta, id_estacion, serial,  cara, producto, precio, fecha, enviada) = ('%1$s','%2$s', '%3$s', '%4$s', '%5$s', '%6$s', '%7$s', '%8$s') WHERE id= (SELECT MAX(id) FROM venta WHERE cara = '%4$s');",id_ventaint, idestacionint, serialint, caraint, idproductoint, precioint,  fechaint, b_enviada,last_id), function(err,result){
                         done();
                         if(err){                            
                             printrec = 0;
@@ -2333,7 +2333,7 @@ function save_sale_efInt(){
         }else{
             vol_tabla = parseFloat(volumenint);
             console.log("Insertado: "+ insertado);
-            client.query(sprintf("UPDATE venta SET ( cara, enviada,autorizacion,km)  = ('%1$s','%2$s', '%3$s', '%4$s') WHERE cara = '%1$s'", caraint, b_enviada,'00000000-0000-0000-0000-000000000000',0), function(err,result){
+            client.query(sprintf("UPDATE venta SET ( cara, enviada,km)  = ('%1$s','%2$s', '%3$s') WHERE cara = '%1$s'", caraint, b_enviada,0), function(err,result){
                 done();
                 if(err){                    
                     printrec = 0;
@@ -2491,9 +2491,6 @@ function rest_sale_internet(){
         if(caraint =='2'){
             imp2 = 1;
         }
-        if(serialint != '0000000000000000'){
-            save_saleInt();
-        }
     });
 }
 
@@ -2567,9 +2564,6 @@ function rest_sale_internetSeg(){
         if(caraint =='2'){
             imp2 = 1;
         }
-        if(serialint != '0000000000000000'){
-            save_saleInt();
-        }
     });
 }
 
@@ -2641,11 +2635,13 @@ function rest_sale(){
             printport.write('No se logro enviar al servidor\n\n'); //Informa que no se pudo subir venta a remoto
             printport.write('*****VENTA ALMACENADA LOCAL*****\n');
             printport.write('****SIN CONEXION A INTERNET*****\n');
+            imp = 1;
         }
         if(cara =='2' && imp2 ==0){
             printport.write('No se logro enviar al servidor\n\n'); //Informa que no se pudo subir venta a remoto
             printport.write('*****VENTA ALMACENADA LOCAL*****\n');
             printport.write('****SIN CONEXION A INTERNET*****\n');
+            imp2 = 1;
         }
         if(serial =='0000000000000000'){
             save_sale_ef();    
@@ -2679,7 +2675,7 @@ function rest_sale_rec(){
 				}else{
 					cararec         = result.rows[0].cara;
 					idproductorec   = result.rows[0].producto;
-					volumenrec      = result.rows[0].volumen;
+					volumenrec      = String(result.rows[0].volumen);
 					volumenrec      = volumenrec.replace('.', ',');
 					dinerorec       = result.rows[0].dinero;
 					preciorec       = result.rows[0].precio;
@@ -3055,8 +3051,8 @@ function print_venta(){
             //mod ayer
     } 
         console.log("FIN IMPRIMIENDO");
-        imp =1;
         imprime_saldo = 0;
+        imp =1;
     }
 }
 
@@ -3623,8 +3619,8 @@ function print_ventaSeg(){
             //mod ayer
         } 
         console.log("FIN IMPRIMIENDO");
-        imp2 =1;
         imprime_saldo = 0;
+        imp2 =1;
     }
     
 }
@@ -4191,7 +4187,7 @@ function enviaInternet(){
 		                if(result.rows[0].volumen != null){
 		                    caraint         = '1';
 					        idproductoint   = result.rows[0].producto;
-					        volumenrec      = result.rows[0].volumen;
+					        volumenrec      = String(result.rows[0].volumen);
 					        volumenint      = volumenrec.replace('.', ',');
 					        dineroint       = result.rows[0].dinero;
 					        precioint       = result.rows[0].precio;
@@ -4209,6 +4205,7 @@ function enviaInternet(){
 					        console.log("Venta recuperada Internet 1: ");
         					console.log("Cara>> "+ caraint);
         					console.log("Producto>> "+ idproductoint);
+        					console.log("Volumen REC>> "+ volumenrec);
         					console.log("Volumen>> "+ volumenint);
         					console.log("Dinero>> "+ dineroint);
         					console.log("Precio>> "+ precioint);
@@ -4259,7 +4256,7 @@ function enviaInternetSeg(){
 		                if(result.rows[0].volumen != null){
 		                    caraint         = '2';
 		                    idproductoint   = result.rows[0].producto;
-					        volumenrec      = result.rows[0].volumen;
+					        volumenrec      = String(result.rows[0].volumen);
 					        volumenint      = volumenrec.replace('.', ',');
 					        dineroint       = result.rows[0].dinero;
 					        precioint       = result.rows[0].precio;
@@ -4277,6 +4274,7 @@ function enviaInternetSeg(){
 					        console.log("Venta recuperada Internet 2: ");
         					console.log("Cara>> "+ caraint);
         					console.log("Producto>> "+ idproductoint);
+        					console.log("Volumen REC>> "+ volumenrec);
         					console.log("Volumen>> "+ volumenint);
         					console.log("Dinero>> "+ dineroint);
         					console.log("Precio>> "+ precioint);
