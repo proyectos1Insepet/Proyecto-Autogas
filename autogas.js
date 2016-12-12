@@ -1290,6 +1290,11 @@ function rx_data_mux(data){
             case '3':
                 printport.write('****** Copia ******\n'); /// impresión de copia de venta
                 print_venta();
+                if(data[4]=='1'){
+                    imp = 0;
+                }else{
+                    imp2 = 0;
+                }
             break;
             
            case '4':
@@ -1878,6 +1883,8 @@ function rx_data_mux(data){
             break; 
             default:
                 console.log("CASO DEFAULT");
+                imp  =0;
+                imp2 =0; 
         }
     }
     
@@ -4164,7 +4171,7 @@ function enviaInternet(){
 		            console.log("Internet>>" + subeInternet);
 		            if (subeInternet){
 		                console.log("No hay que subir venta 1");
-		                setTimeout(enviaInternetSeg(),1000);
+		                setTimeout(enviaInternetSeg(),10000);
 		            }else{
 		                if(result.rows[0].volumen != null){
 		                    caraint         = '1';
@@ -4314,7 +4321,7 @@ function watchful(){
 
 muxport.open(abrir);                    //Abre la comunicacion con el mux
 printport.open(abrir_print);            //Abre la comunicacion con el mux
-setInterval(watchful, 30000);           //Revisa el estado de las banderas
+setInterval(watchful, 60000);           //Revisa el estado de las banderas
 
 
 
