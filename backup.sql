@@ -1,4 +1,4 @@
-﻿--
+--
 -- PostgreSQL database dump
 --
 
@@ -24,6 +24,9 @@ COMMENT ON EXTENSION plpgsql IS 'PL/pgSQL procedural language';
 
 SET search_path = public, pg_catalog;
 
+SET default_tablespace = '';
+
+SET default_with_oids = false;
 
 --
 -- Name: cortem; Type: TABLE; Schema: public; Owner: postgres; Tablespace: 
@@ -34,7 +37,8 @@ CREATE TABLE cortem (
     ultima_venta integer,
     u_vol character(12),
     u_vol_2 character(12),
-    u_vol_3 character(12)
+    u_vol_3 character(12),
+    idpos character(1)
 );
 
 
@@ -69,7 +73,8 @@ CREATE TABLE productos (
     diesel integer,
     corriente integer,
     extra integer,
-    s_diesel integer
+    s_diesel integer,
+    id integer
 );
 
 
@@ -87,11 +92,26 @@ CREATE TABLE recibo (
     dir character varying(30),
     footer character varying(30),
     url character varying(75),
-    url_save character varying(75)
+    url_save character varying(75),
+    idestacion character varying(5)
 );
 
 
 ALTER TABLE public.recibo OWNER TO postgres;
+
+--
+-- Name: recuperacion; Type: TABLE; Schema: public; Owner: postgres; Tablespace: 
+--
+
+CREATE TABLE recuperacion (
+    idpos integer,
+    tot1 character varying(12),
+    tot2 character varying(12),
+    tot3 character varying(12)
+);
+
+
+ALTER TABLE public.recuperacion OWNER TO postgres;
 
 --
 -- Name: venta; Type: TABLE; Schema: public; Owner: postgres; Tablespace: 
@@ -99,7 +119,7 @@ ALTER TABLE public.recibo OWNER TO postgres;
 
 CREATE TABLE venta (
     autorizacion character varying(38),
-    id_venta character varying(12),
+    id_venta character varying(25),
     id_estacion character varying(4),
     serial character varying(16),
     km character varying(10),
@@ -110,7 +130,12 @@ CREATE TABLE venta (
     volumen character varying(7),
     fecha character varying(20),
     enviada boolean DEFAULT false,
-    id integer NOT NULL
+    id integer NOT NULL,
+    placa character varying(10),
+    direccion character varying(50),
+    idestacion character varying(5),
+    nombrecuenta character varying(255),
+    telefono character varying(30)
 );
 
 
@@ -155,8 +180,9 @@ ALTER TABLE ONLY venta ALTER COLUMN id SET DEFAULT nextval('venta_id_seq'::regcl
 -- Data for Name: cortem; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-COPY cortem (id, ultima_venta, u_vol, u_vol_2, u_vol_3) FROM stdin;
-1	0	000000000000	000000000000	000000000000
+COPY cortem (id, ultima_venta, u_vol, u_vol_2, u_vol_3, idpos) FROM stdin;
+1	803	000000056078	000000011969	000000011904	1
+2	771	000000045844	000000014947	000000011710	2
 \.
 
 
@@ -164,15 +190,16 @@ COPY cortem (id, ultima_venta, u_vol, u_vol_2, u_vol_3) FROM stdin;
 -- Name: cortem_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('cortem_id_seq', 21, true);
+SELECT pg_catalog.setval('cortem_id_seq', 3, true);
 
 
 --
 -- Data for Name: productos; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-COPY productos (diesel, corriente, extra, s_diesel) FROM stdin;
-0	0	0	0
+COPY productos (diesel, corriente, extra, s_diesel, id) FROM stdin;
+2	1	0	0	1
+2	1	0	0	2
 \.
 
 
@@ -180,25 +207,19 @@ COPY productos (diesel, corriente, extra, s_diesel) FROM stdin;
 -- Data for Name: recibo; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-COPY recibo (linea1, linea2, nit, tel, dir, footer, url, url_save) FROM stdin;
-GRUPO EDS AUTOGAS S.A.S	EDS AV CIUDAD DE QUITO	900.459.737-5	7567262	AV CIUDAD DE QUITO	GRACIAS POR SU COMPRA	http://190.85.166.35/ServicioGRPAliados/AT0001.svc	http://190.85.166.35/ServicioGRPAliados/CV0001.svc
+COPY recibo (linea1, linea2, nit, tel, dir, footer, url, url_save, idestacion) FROM stdin;
+GRUPO EDS AUTOGAS SAS	ESSO INDUSTRIALES	900..459.737-5		CRA 71 N 19 - 53	GRACIAS POR SU COMPRA	http://190.85.166.35/ServicioGRPAliados/AT0001.svc	http://190.85.166.35/ServicioGRPAliados/CV0001.svc	4
 \.
 
 
 --
--- Data for Name: venta; Type: TABLE DATA; Schema: public; Owner: postgres
+-- Data for Name: recuperacion; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-COPY venta (autorizacion, id_venta, id_estacion, serial, km, cara, producto, precio, dinero, volumen, fecha, enviada, id) FROM stdin;
-0	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	f	1
+COPY recuperacion (idpos, tot1, tot2, tot3) FROM stdin;
+2	000086605416	000097460423	000000000000
+1	000072253175	000040720292	000000000000
 \.
-
-
---
--- Name: venta_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
---
-
-SELECT pg_catalog.setval('venta_id_seq', 1, true);
 
 
 --

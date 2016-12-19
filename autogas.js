@@ -171,6 +171,7 @@ var id_ventarec     = new Buffer(7);
 var producto1       = new Buffer(12);
 var producto2       = new Buffer(12);
 var producto3       = new Buffer(12);
+var watchInt;
 /*
 *********************************************************************************************************
 *                                    TOMA DE DATOS PARA RECIBOS
@@ -2588,6 +2589,7 @@ function rest_sale_internetSeg(){
 */
 function rest_sale(){
     var n_id = idestacion + id_venta;
+    clearInterval(watch);
     trycatch(function() {
         var opt_rest_venta = {
                 url: sprintf(url_save+"/rest/UploadSale/%1$s/%2$s/%3$s/%4$s/%5$s/%6$s/%7$s/%8$s/%9$s/%10$s/%11$s/%12$s", cara, idproducto, volumen, dinero, precio, idestacion, serial, autorizacion, n_id, km, fecha, fecha), /*global autorizacion*//*global idestacion*/
@@ -4171,7 +4173,7 @@ function enviaInternet(){
 		            console.log("Internet>>" + subeInternet);
 		            if (subeInternet){
 		                console.log("No hay que subir venta 1");
-		                setTimeout(enviaInternetSeg(),10000);
+		                watchInt = setInterval(enviaInternetSeg, 30000);           //Revisa el estado de las banderas
 		            }else{
 		                if(result.rows[0].volumen != null){
 		                    caraint         = '1';
@@ -4298,8 +4300,9 @@ function enviaInternetSeg(){
 function watchful(){
     console.log("Vigilando");
     enviaInternet();
+    clearInterval(watchInt);
     var f = new Date();
-    if((f.getHours()=='14')&&(f.getMinutes()=='44')&&(corte_ok==0)){
+    if((f.getHours()=='14')&&(f.getMinutes()=='0')&&(corte_ok==0)){
         printport.write('MOMENTO DE CORTE\n');
         printport.write('REALICE CIERRE DE TURNO\n');
         printport.write('PARA INICIAR VENTA\n\n\n\n\n\n');              //A la hora programada se ejecuta la funcion para obligar a corte
@@ -4321,7 +4324,7 @@ function watchful(){
 
 muxport.open(abrir);                    //Abre la comunicacion con el mux
 printport.open(abrir_print);            //Abre la comunicacion con el mux
-setInterval(watchful, 60000);           //Revisa el estado de las banderas
+var watch    = setInterval(watchful, 60000);           //Revisa el estado de las banderas
 
 
 
