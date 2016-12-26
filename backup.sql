@@ -181,8 +181,8 @@ ALTER TABLE ONLY venta ALTER COLUMN id SET DEFAULT nextval('venta_id_seq'::regcl
 --
 
 COPY cortem (id, ultima_venta, u_vol, u_vol_2, u_vol_3, idpos) FROM stdin;
-1	803	000000056078	000000011969	000000011904	1
-2	771	000000045844	000000014947	000000011710	2
+1	1	000000056078	000000011969	000000011904	1
+2	2	000000045844	000000014947	000000011710	2
 \.
 
 
@@ -220,6 +220,23 @@ COPY recuperacion (idpos, tot1, tot2, tot3) FROM stdin;
 2	000086605416	000097460423	000000000000
 1	000072253175	000040720292	000000000000
 \.
+
+
+--
+-- Data for Name: venta; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY venta (autorizacion, id_venta, id_estacion, serial, km, cara, producto, precio, dinero, volumen, fecha, enviada, id, placa, direccion, idestacion, nombrecuenta, telefono) FROM stdin;
+1	\N	\N	\N	\N	2	\N	\N	\N	0	\N	t	2	\N	\N	\N	\N	\N
+1	\N	\N	\N	\N	1	\N	\N	\N	0	\N	t	1	\N	\N	\N	\N	\N
+\.
+
+
+--
+-- Name: venta_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('venta_id_seq', 2, true);
 
 
 --

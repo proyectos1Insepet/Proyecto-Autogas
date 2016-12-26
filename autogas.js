@@ -31,11 +31,11 @@ var pg              = require('pg');
 */
 var port_mux          = '/dev/ttyO4';
 var config_port_mux   = {baudrate: 9600, parser: sp.parsers.readline("*")};
-var muxport           = new sp.SerialPort(port_mux,config_port_mux);
+var muxport           = new sp.SerialPort(port_mux,config_port_mux,abrir);
 
 var port_print        = '/dev/ttyO1';
 var config_port_print = {baudrate: 115200, parser: sp2.parsers.readline("*")};// 115200
-var printport           = new sp2.SerialPort(port_print,config_port_print);
+var printport           = new sp2.SerialPort(port_print,config_port_print,abrir_print);
      
 var conString         = "postgrest://db_admin:12345@localhost:5432/autogas";
 /*****************Variables para el flujo***************************/
@@ -223,7 +223,8 @@ function reinicio(error){
                 	 return console.error('error seleccionar ultima venta', err);
                 	}else{
                 	    console.log(result.rows[0].enviada);
-                		if (result.rows[0].enviada == false && result.rows[0].volumen == null){
+                	    
+                		if (result.rows[0].enviada == false && result.rows[0].volumen == null ){
                 			printport.write('VENTA INCOMPLETA CARA 1\n');
                 			printport.write('REALICE CIERRE DE TURNO\n');
                 			printport.write('PARA INICIAR VENTA\n\n\n\n\n\n\n\n\n');
@@ -4322,8 +4323,8 @@ function watchful(){
 *********************************************************************************************************
 */
 
-muxport.open(abrir);                    //Abre la comunicacion con el mux
-printport.open(abrir_print);            //Abre la comunicacion con el mux
+//muxport.open(abrir);                    //Abre la comunicacion con el mux
+//printport.open(abrir_print);            //Abre la comunicacion con el mux
 var watch    = setInterval(watchful, 60000);           //Revisa el estado de las banderas
 
 
