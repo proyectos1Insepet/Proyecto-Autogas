@@ -848,8 +848,6 @@ function procesaRecSeg(){
                                 id_ventarec = '200'+String(result.rows[0].id_venta); 
                             }
                         });
-                        
-                       
                         client.query(sprintf("SELECT enviada, cara, producto,precio FROM venta WHERE id ='%1$s';",last_id), function(err,result){
                             done();
                             if(err){
@@ -888,13 +886,11 @@ function procesaRecSeg(){
                                             rest_sale_rec();
                                         }
                                     });
-                                    
                                 }
                             }
                         });
                     }                 
                 });
-        	        
     	    }else{
                 console.log ("Sin recuperada");
             }
@@ -924,7 +920,6 @@ function corte_manual(){
                     return console.error('error inicio corte', err);
                 }else{
                     var last_corte = result.rows[0].max;
-                   
                     printport.write('  '+linea1 +'\n');
                     printport.write('   '+linea2 +'\n');
                     printport.write('      '+nit+'\n');
@@ -935,10 +930,7 @@ function corte_manual(){
                     printport.write('Cara: ' + cara+ '\n');
                     var f = new Date();
 					printport.write('Fecha:' + String(f.getDate() + "-" + (f.getMonth() + 1) + "-" + f.getFullYear() + ' ' + f.getHours() + ':' + f.getMinutes()) + '\n\n');                                                      
-                        
-                    }
-                
-                
+                }
             });
             client.query(sprintf("SELECT MAX(ultima_venta) FROM cortem where idpos = '%1$s';",String(cara)), function(err,result){
                 done();
@@ -975,116 +967,58 @@ function corte_manual(){
 				            console.log(total_vol_p3);
 				        }
 				    });
-                    
-                    
                     //<!--Sumatoria de dinero de las ventas realizadas por Beagle-->
                     
-					if (cara == '1'){
-						client.query(sprintf("SELECT SUM(CAST(dinero AS INT)) AS 'dinero', SUM(CAST (volumen AS FLOAT)) AS 'volumen',COUNT(dinero) FROM venta WHERE id>%1$s AND producto='%2$s' AND cara = '1'; ", last_id,idenproducto1), function(err,result){
-							done();
-							if(err){
-								return console.error('error toma totales',err);
-							}else{
-								console.log("Primer producto");
-								console.log('Cuenta'+result.rows[0].count);
-								printport.write('Ventas ' +n_producto1+':' + String(result.rows[0].count) + '\n'); 
-								if(result.rows[0].sum==null){
-									result.rows[0].sum=0;}
-								printport.write('Total '+n_producto1+' $ :' + String(result.rows[0].dinero) + '\n');
-								printport.write('Total '+n_producto1+' G :' + String(result.rows[0].volumen) + '\n');
-								printport.write(n_producto1+' Vol. Final: ' +parseFloat(producto1)/100 + '\n\n');							
-							}
-						});
-					}
-					if (cara == '2'){
-						client.query(sprintf('SELECT SUM(CAST(dinero AS INT)) AS "dinero", SUM(CAST (volumen AS FLOAT)) AS "volumen",COUNT(dinero) FROM venta WHERE id>%1$s AND producto= CAST(%2$s AS CHAR) AND cara = CAST (%3$s AS CHAR);', last_id,String(idenproducto1b),String(2)), function(err,result){
-							done();
-							if(err){
-								return console.error('error toma totales1',err);
-							}else{
-								console.log("Primer producto");
-								console.log('Cuenta'+result.rows[0].count);
-								printport.write('Ventas ' +n_producto1b+':' + String(result.rows[0].count) + '\n'); 
-								if(result.rows[0].sum==null){
-									result.rows[0].sum=0;}
-								printport.write('Total '+n_producto1b+' $ :' + String(result.rows[0].dinero) + '\n');
-								printport.write('Total '+n_producto1b+' G :' + String(result.rows[0].volumen) + '\n');
-								printport.write(n_producto1b+' Vol. Final: ' +parseFloat(producto1)/100 + '\n\n');							
-							}
-						});
-					}
-                    
+					client.query(sprintf('SELECT SUM(CAST(dinero AS INT)) AS "dinero", SUM(CAST (volumen AS FLOAT)) AS "volumen",COUNT(dinero) FROM venta WHERE id>%1$s AND producto= CAST(%2$s AS CHAR) AND cara = CAST (%3$s AS CHAR);', last_id,String(idenproducto1),cara), function(err,result){
+						done();
+						if(err){
+							return console.error('error toma totales',err);
+						}else{
+							console.log("Primer producto");
+							console.log('Cuenta'+result.rows[0].count);
+							printport.write('Ventas ' +n_producto1+':' + String(result.rows[0].count) + '\n'); 
+							if(result.rows[0].sum==null){
+								result.rows[0].sum=0;}
+							printport.write('Total '+n_producto1+' $ :' + String(result.rows[0].dinero) + '\n');
+							printport.write('Total '+n_producto1+' G :' + String(result.rows[0].volumen) + '\n');
+							printport.write(n_producto1+' Vol. Final: ' +parseFloat(producto1)/100 + '\n\n');							
+						}
+					});
 					if(productos > 2 || productosB > 2){
-						if (cara == '1'){
-							console.log("Segundo producto");
-							client.query(sprintf("SELECT SUM(CAST(dinero AS INT)) AS 'dinero', SUM(CAST (volumen AS FLOAT)) AS 'volumen',COUNT(dinero) FROM venta WHERE id>%1$s AND producto='%2$s' AND cara ='1'; ", last_id,idenproducto2), function(err,result){
-								done();
-								if(err){
-									return console.error('error toma totales', err);
-								}else{
-									console.log('Cuenta'+result.rows[0].count);
-									printport.write('Ventas '+n_producto2+':' + String(result.rows[0].count) + '\n'); 
-									if(result.rows[0].sum==null){
-										result.rows[0].sum=0;}
-									printport.write('Total '+n_producto2+' $: ' + String(result.rows[0].sum) + '\n');
-									printport.write('Total '+n_producto2+' G :' + String(result.rows[0].volumen) + '\n');
-									printport.write(n_producto2+' Vol. Final: ' + parseFloat(producto2)/100 + '\n\n');
-								}
-							});
-						}
-						if (cara == '2'){
-							console.log("Segundo producto");
-							client.query(sprintf("SELECT SUM(CAST(dinero AS INT)) AS 'dinero', SUM(CAST (volumen AS FLOAT)) AS 'volumen',COUNT(dinero) FROM venta WHERE id>%1$s AND producto='%2$s' AND cara = '2'; ", last_id,idenproducto2b), function(err,result){
-								done();
-								if(err){
-									return console.error('error toma totales', err);
-								}else{
-									console.log('Cuenta'+result.rows[0].count);
-									printport.write('Ventas '+n_producto2b+':' + String(result.rows[0].count) + '\n'); 
-									if(result.rows[0].sum==null){
-										result.rows[0].sum=0;}
-									printport.write('Total '+n_producto2b+' $: ' + String(result.rows[0].sum) + '\n');
-									printport.write('Total '+n_producto2b+' G :' + String(result.rows[0].volumen) + '\n');
-									printport.write(n_producto2b+' Vol. Final: ' + parseFloat(producto2)/100 + '\n\n');
-								}
-							});
-						}
+						console.log("Segundo producto");
+						client.query(sprintf('SELECT SUM(CAST(dinero AS INT)) AS "dinero", SUM(CAST (volumen AS FLOAT)) AS "volumen",COUNT(dinero) FROM venta WHERE id>%1$s AND producto= CAST(%2$s AS CHAR) AND cara = CAST (%3$s AS CHAR);', last_id,String(idenproducto2),cara), function(err,result){
+							done();
+							if(err){
+								return console.error('error toma totales', err);
+							}else{
+								console.log('Cuenta'+result.rows[0].count);
+								printport.write('Ventas '+n_producto2+':' + String(result.rows[0].count) + '\n'); 
+								if(result.rows[0].sum==null){
+									result.rows[0].sum=0;}
+								printport.write('Total '+n_producto2+' $: ' + String(result.rows[0].sum) + '\n');
+								printport.write('Total '+n_producto2+' G :' + String(result.rows[0].volumen) + '\n');
+								printport.write(n_producto2+' Vol. Final: ' + parseFloat(producto2)/100 + '\n\n');
+							}
+						});
 					}
 					
                     if (productos > 5 || productosB > 5){
 						console.log("Tercer producto");
-						if (cara == '1'){
-							client.query(sprintf("SELECT SUM(CAST(dinero AS INT)) AS 'dinero', SUM(CAST (volumen AS FLOAT)) AS 'volumen',COUNT(dinero) FROM venta WHERE id>%1$s AND producto='%2$s' AND cara = '1'; ", last_id,idenproducto3), function(err,result){
-								done();
-								if(err){
-									return console.error('error toma totales', err);
-								}else{
-									console.log('Cuenta'+result.rows[0].count);
-									printport.write('Ventas '+n_producto3+':' + String(result.rows[0].count) + '\n'); 
-									if(result.rows[0].sum==null){
-									result.rows[0].sum=0;}
-									printport.write('Total '+n_producto3+' $: ' + String(result.rows[0].sum) + '\n');
-									printport.write('Total '+n_producto3+' G :' + String(result.rows[0].volumen) + '\n');
-									printport.write(n_producto3+' Vol. Final: ' + parseFloat(producto3)/100 + '\n\n');
-								} 
-							});
-						}
-						if (cara == '2'){
-							client.query(sprintf("SELECT SUM(CAST(dinero AS INT)) AS 'dinero', SUM(CAST (volumen AS FLOAT)) AS 'volumen',COUNT(dinero) FROM venta WHERE id>%1$s AND producto='%2$s' AND cara = '2'; ", last_id,idenproducto3b), function(err,result){
-								done();
-								if(err){
-									return console.error('error toma totales', err);
-								}else{
-									console.log('Cuenta'+result.rows[0].count);
-									printport.write('Ventas '+n_producto3b+':' + String(result.rows[0].count) + '\n'); 
-									if(result.rows[0].sum==null){
-									result.rows[0].sum=0;}
-									printport.write('Total '+n_producto3b+' $: ' + String(result.rows[0].sum) + '\n');
-									printport.write('Total '+n_producto3b+' G :' + String(result.rows[0].volumen) + '\n');
-									printport.write(n_producto3b+' Vol. Final: ' + parseFloat(producto3)/100 + '\n\n');
-								} 
-							});
-						}
+						client.query(sprintf('SELECT SUM(CAST(dinero AS INT)) AS "dinero", SUM(CAST (volumen AS FLOAT)) AS "volumen",COUNT(dinero) FROM venta WHERE id>%1$s AND producto= CAST(%2$s AS CHAR) AND cara = CAST (%3$s AS CHAR);', last_id,String(idenproducto3),cara), function(err,result){
+							done();
+							if(err){
+								return console.error('error toma totales', err);
+							}else{
+								console.log('Cuenta'+result.rows[0].count);
+								printport.write('Ventas '+n_producto3+':' + String(result.rows[0].count) + '\n'); 
+								if(result.rows[0].sum==null){
+								result.rows[0].sum=0;}
+								printport.write('Total '+n_producto3+' $: ' + String(result.rows[0].sum) + '\n');
+								printport.write('Total '+n_producto3+' G :' + String(result.rows[0].volumen) + '\n');
+								printport.write(n_producto3+' Vol. Final: ' + parseFloat(producto3)/100 + '\n\n');
+							} 
+						});
+						
 					}
                     if(imprime_contadores == 1){       
                                 printport.write('Visitas: ' + visitasDia + 'd  ' + visitasSema + 's  ' + visitasMes + 'm  ' + '\n\n\n');
@@ -1114,29 +1048,28 @@ function corte_manual(){
                             }); 
                     }
                     if (cara == '2'){   
-                            client.query("SELECT MAX(id) FROM venta where cara = '2';", function(err,result){
-                                done();
-                                if(err){
-                                    return console.error('error de conexion', err);
-                                }else{
-                                    printport.write('\n\n\n\n\n\n');
-                                    var last_id = result.rows[0].max;
-                                    //<!--inserta identificador de corte y últimos totales>
-                                    client.query(sprintf("INSERT INTO cortem (ultima_venta,u_vol,u_vol_2,u_vol_3,idpos) VALUES ('%1$s','%2$s','%3$s','%4$s','%5$s');",last_id,producto1,producto2,producto3,String(cara)), function(err,result){
-                                        done();
-                                        if(err){                                            
-                                            return console.error('error de conexion', err); 
-                                        }
-                                    });
-                                }                 
-                            });
+                        client.query("SELECT MAX(id) FROM venta where cara = '2';", function(err,result){
+                            done();
+                            if(err){
+                                return console.error('error de conexion', err);
+                            }else{
+                                printport.write('\n\n\n\n\n\n');
+                                var last_id = result.rows[0].max;
+                                //<!--inserta identificador de corte y últimos totales>
+                                client.query(sprintf("INSERT INTO cortem (ultima_venta,u_vol,u_vol_2,u_vol_3,idpos) VALUES ('%1$s','%2$s','%3$s','%4$s','%5$s');",last_id,producto1,producto2,producto3,String(cara)), function(err,result){
+                                    done();
+                                    if(err){                                            
+                                        return console.error('error de conexion', err); 
+                                    }
+                                });
+                            }                 
+                        });
                     }
-                            
-				        }
-                   });
-                }
-          });
-    }
+		        }
+           });
+        }
+    });
+}
 
 /*
 *********************************************************************************************************
