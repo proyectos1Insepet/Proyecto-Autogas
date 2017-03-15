@@ -2694,9 +2694,9 @@ function rest_sale_rec(){
 					console.log("Termina post con error");
 					error_local = '1';
 					b_enviada = 'FALSE'; 
-					printport.write('No se logró enviar al servidor\n\n'); //Informa que no se pudo subir venta a remoto
+					printport.write('No se logro enviar al servidor\n\n'); //Informa que no se pudo subir venta a remoto
 					printport.write('*****VENTA ALMACENADA LOCAL*****\n\n');
-					save_sale_rec();    /// Guarda venta cuando no hay conexión a servidor
+					save_sale_rec();    /// Guarda venta cuando no hay conexion a servidor
 				});
 			}
 			});
@@ -2732,7 +2732,6 @@ function print_venta(){
             printport.write('      Tel: '+tel+'\n');
             printport.write('  '+dir+ '\n\n');            
             printport.write('Numero: ' +parseInt(idestacion+id_venta,10)+ '\n\n');            
-            
             var f = new Date();
             printport.write('Fecha:' + String(f.getDate() + "-" + (f.getMonth() + 1) + "-" + f.getFullYear() + ' ' + f.getHours() + ':' + f.getMinutes()) + '\n\n');                                                      
             if(imprime_contadores == 1){         
