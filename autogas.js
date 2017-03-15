@@ -61,6 +61,7 @@ var imprec;
 var SinImpresion;
 var printrec;
 var printRestAuto;
+var OldSerial;
 /**************Variables para la venta*****************************/
 var codigoError;
 var dineroDia;
@@ -195,6 +196,7 @@ function reinicio(error){
          permite = 0;
          imp  = 0;
          imp2 = 0;
+         OldSerial = '0';
          pg.connect(conString, function(err, client, done){
          if(err){             
              return console.error('error de conexion 1', err);
@@ -1227,8 +1229,8 @@ function rx_data_mux(data){
             case '3':
                 printport.write('****** Copia ******\n'); /// impresión de copia de venta
                 cara = data[4];
+                console.log("Cara copia"+cara);
                 print_copy();
-                imp = 0;
             break;
             
            case '4':
@@ -1819,6 +1821,7 @@ function rx_data_mux(data){
                 console.log("CASO DEFAULT");
                 imp  =0;
                 imp2 =0; 
+                OldSerial = '0';
         }
     }
     
@@ -1880,7 +1883,9 @@ function rest_auto(){
         muxport.write(String(cara));
         muxport.write('1');                         //Limpia estado del mux e inicia pantalla
         muxport.write('*');
-        if(printRestAuto == 1){
+        console.log("Serial: "+ serial + "Old: " + OldSerial);
+        if((printRestAuto == 1)  && (serial != OldSerial)){
+            OldSerial = serial;
             printRestAuto = 0;
             printport.write('\n\nLos datos no se lograron\nenviar al servidor.\n\n\n\n\n\n\n');
         }
@@ -3865,7 +3870,7 @@ function print_copy(){
 						printport.write('Dinero sem:  $' + dineroSema +'\n');
 						printport.write('Dinero mes:  $' + dineroMes +'\n\n'); 
 					}
-					if(serial !='0000000000000000'){
+					if(serialcopy !='0000000000000000'){
 						printport.write('Empresa:\n');
 						printport.write(String(nombreCuentacopy) + '\n');
 						printport.write('Direccion:\n');
@@ -3918,6 +3923,7 @@ function print_copy(){
 					printport.write('\n\n\n\n\n\n\n');   									       
 				}
 			});
+        }
 	});
 }
 
