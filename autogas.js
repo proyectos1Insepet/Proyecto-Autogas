@@ -60,6 +60,7 @@ var imp2;
 var imprec;
 var SinImpresion;
 var printrec;
+var printRestAuto;
 /**************Variables para la venta*****************************/
 var codigoError;
 var dineroDia;
@@ -1132,6 +1133,7 @@ function rx_data_mux(data){
                     var a = sprintf(url_auto+"/rest/Authorize/%1$s/%2$s/%3$s/%4$s/%5$s/%6$s/%7$s", serial, idproducto, idestacion, precio, tipopreset, preset, km);
                     console.log('>>'+a);
                     muxport.write('OK');
+                    printRestAuto = 1;
                     rest_auto();
 					if(cara == '1'){
 						imp = 0;
@@ -1176,7 +1178,7 @@ function rx_data_mux(data){
                 }  
                 console.log('Km: '+km); 
                 var f = new Date();
-                fecha = f.getDate() + "-" + (f.getMonth() +1) + "-" + f.getFullYear() + ' ' + f.getHours() + '_' + f.getMinutes();
+                fecha = f.getDate() + "-" + (f.getMonth() +1) + "-" + f.getFullYear() + ' ' + f.getHours() + ':' + f.getMinutes();
                 console.log('Fecha: '+fecha);
                 muxport.write('OK');
                 var n_id = idestacion + id_venta;
@@ -1224,7 +1226,8 @@ function rx_data_mux(data){
             
             case '3':
                 printport.write('****** Copia ******\n'); /// impresión de copia de venta
-                print_venta();
+                cara = data[4];
+                print_copy();
                 imp = 0;
             break;
             
@@ -1877,7 +1880,10 @@ function rest_auto(){
         muxport.write(String(cara));
         muxport.write('1');                         //Limpia estado del mux e inicia pantalla
         muxport.write('*');
-        printport.write('\n\nLos datos no se lograron\nenviar al servidor.\n\n\n\n\n\n\n');
+        if(printRestAuto == 1){
+            printRestAuto = 0;
+            printport.write('\n\nLos datos no se lograron\nenviar al servidor.\n\n\n\n\n\n\n');
+        }
     });
     
 }
@@ -1896,7 +1902,7 @@ function save_auto(){
                 return console.error('error de conexion 1', err);
             }else{
                 var f = new Date();
-                fecha = f.getDate() + "-" + (f.getMonth() +1) + "-" + f.getFullYear() + ' ' + f.getHours() + '_' + f.getMinutes();
+                fecha = f.getDate() + "-" + (f.getMonth() +1) + "-" + f.getFullYear() + ' ' + f.getHours() + ':' + f.getMinutes();
                 client.query(sprintf("INSERT INTO venta (autorizacion, precio, placa, direccion, cara, producto, idestacion,serial,fecha,km,nombrecuenta,telefono) VALUES ('%1$s','%2$s','%3$s','%4$s','%5$s','%6$s','%7$s','%8$s','%9$s','%10$s','%11$s','%12$s');",autorizacion, precio, placa, direccion,cara , idproducto, idestacion,serial,fecha,km,nombreCuenta,telefono), function(err,result){
                     done();
                     if(err){                        
@@ -2606,95 +2612,94 @@ function rest_sale_rec(){
         }else{
             console.log(enviaRecuperada);
 			
-			    client.query(sprintf("SELECT cara, producto, volumen, dinero, precio, idestacion, serial,km, autorizacion, id_venta,fecha,nombrecuenta,direccion,telefono FROM venta  WHERE id='%1$s'", idVentaRecuperada), function(err,result){
-				done();
-				if(err){
-					return console.error('error de envio recuperada', err); 
-				}else{
-				    console.log("ID VENTA REST"+id_ventarec);
-					cararec         = result.rows[0].cara;
-					idproductorec   = result.rows[0].producto;
-					volumenrec      = String(result.rows[0].volumen);
-					volumenrec      = volumenrec.replace('.', ',');
-					dinerorec       = result.rows[0].dinero;
-					preciorec       = result.rows[0].precio;
-					idestacionrec   = result.rows[0].idestacion;
-					serialrec       = result.rows[0].serial;
-					kmrec           = result.rows[0].km;
-					autorizacionrec = result.rows[0].autorizacion;	
-					fecha        = result.rows[0].fecha;
-					nombreCuenta = result.rows[0].nombrecuenta;
-					direccion    = result.rows[0].direccion;
-					telefono     = result.rows[0].telefono;
+		    client.query(sprintf("SELECT cara, producto, volumen, dinero, precio, idestacion, serial,km, autorizacion, id_venta,fecha,nombrecuenta,direccion,telefono FROM venta  WHERE id='%1$s'", idVentaRecuperada), function(err,result){
+			done();
+			if(err){
+				return console.error('error de envio recuperada', err); 
+			}else{
+			    console.log("ID VENTA REST"+id_ventarec);
+				cararec         = result.rows[0].cara;
+				idproductorec   = result.rows[0].producto;
+				volumenrec      = String(result.rows[0].volumen);
+				volumenrec      = volumenrec.replace('.', ',');
+				dinerorec       = result.rows[0].dinero;
+				preciorec       = result.rows[0].precio;
+				idestacionrec   = result.rows[0].idestacion;
+				serialrec       = result.rows[0].serial;
+				kmrec           = result.rows[0].km;
+				autorizacionrec = result.rows[0].autorizacion;	
+				fecha        = result.rows[0].fecha;
+				nombreCuenta = result.rows[0].nombrecuenta;
+				direccion    = result.rows[0].direccion;
+				telefono     = result.rows[0].telefono;
 
-					console.log("Venta recuperada: ");
-					console.log("Cara>> "+ cararec);
-					console.log("Producto>> "+ idproductorec);
-					console.log("Volumen>> "+ volumenrec);
-					console.log("Dinero>> "+ dinerorec);
-					console.log("Precio>> "+ preciorec);
-					console.log("ID Estacion>> "+ idestacionrec);
-					console.log("Serial>> "+ serialrec);
-					console.log("Autorizacion>> "+ autorizacionrec);
-					console.log("ID Venta>> "+ id_ventarec);
-					console.log("Fecha>> "+ fecha);
-					console.log("Cuenta>> "+ nombreCuenta);
-					console.log("Direccion>> "+ direccion);
-					console.log("Telefono>> "+ telefono);
-					if(cararec =='1'){
-                        printInt = 0;
-                    }else{
-                        printInt2 = 0;
-                    }
-					trycatch(function() {
-						var opt_rest_venta = {				
-						url: sprintf(url_save+"/rest/UploadSale/%1$s/%2$s/%3$s/%4$s/%5$s/%6$s/%7$s/%8$s/%9$s/%10$s/%11$s/%12$s", cararec, idproductorec, volumenrec, dinerorec, preciorec, idestacionrec, serialrec, autorizacionrec, id_ventarec, kmrec, fecha, fecha), /*global autorizacion*//*global idestacion*/
-						method: "POST",
-						    
-						};   
-						rest_venta(opt_rest_venta, 
-						function(error, response, body) {			  		 
-							var elements2 = ds.deserialize(body);
-							var jsonString2 = ds.getJson(elements2);
-						    console.log(opt_rest_venta);
-							console.log(jsonString2);
+				console.log("Venta recuperada: ");
+				console.log("Cara>> "+ cararec);
+				console.log("Producto>> "+ idproductorec);
+				console.log("Volumen>> "+ volumenrec);
+				console.log("Dinero>> "+ dinerorec);
+				console.log("Precio>> "+ preciorec);
+				console.log("ID Estacion>> "+ idestacionrec);
+				console.log("Serial>> "+ serialrec);
+				console.log("Autorizacion>> "+ autorizacionrec);
+				console.log("ID Venta>> "+ id_ventarec);
+				console.log("Fecha>> "+ fecha);
+				console.log("Cuenta>> "+ nombreCuenta);
+				console.log("Direccion>> "+ direccion);
+				console.log("Telefono>> "+ telefono);
+				if(cararec =='1'){
+                    printInt = 0;
+                }else{
+                    printInt2 = 0;
+                }
+				trycatch(function() {
+					var opt_rest_venta = {				
+					url: sprintf(url_save+"/rest/UploadSale/%1$s/%2$s/%3$s/%4$s/%5$s/%6$s/%7$s/%8$s/%9$s/%10$s/%11$s/%12$s", cararec, idproductorec, volumenrec, dinerorec, preciorec, idestacionrec, serialrec, autorizacionrec, id_ventarec, kmrec, fecha, fecha), /*global autorizacion*//*global idestacion*/
+					method: "POST",
+					    
+					};   
+					rest_venta(opt_rest_venta, 
+					function(error, response, body) {			  		 
+						var elements2 = ds.deserialize(body);
+						var jsonString2 = ds.getJson(elements2);
+					    console.log(opt_rest_venta);
+						console.log(jsonString2);
+					
+						var result2 = JSON.parse(jsonString2);
+					
+						codigoError        =  result2.cV0001responseREST.codError.value;
+						dineroDia          =  result2.cV0001responseREST.dineroDia.value;           //Resultados enviados por Autogas
+						dineroMes          =  result2.cV0001responseREST.dineroMes.value;
+						dineroSema         =  result2.cV0001responseREST.dineroSema.value;
+						imprime_contadores =  String(result2.cV0001responseREST.imprimeContador.value);              
+						imprime_saldo      =  String(result2.cV0001responseREST.imprimeSaldo.value);
+						//nombreCuenta       =  result2.cV0001responseREST.nombreCuenta.value;
+						placa              =  result2.cV0001responseREST.placa.value;
+						retorno            =  result2.cV0001responseREST.retorno.value;
+						saldo              =  String(result2.cV0001responseREST.saldo.value);
+						visitasDia         =  String(result2.cV0001responseREST.visitasDia.value);
+						visitasMes         =  String(result2.cV0001responseREST.visitasMes.value);
+						visitasSema        =  String(result2.cV0001responseREST.visitasSema.value);
+						volDia             =  String(result2.cV0001responseREST.volDia.value);
+						volMes             =  String(result2.cV0001responseREST.volMes.value);
+						volSema            =  String(result2.cV0001responseREST.volSema.value);
 						
-							var result2 = JSON.parse(jsonString2);
-						
-							codigoError        =  result2.cV0001responseREST.codError.value;
-							dineroDia          =  result2.cV0001responseREST.dineroDia.value;           //Resultados enviados por Autogas
-							dineroMes          =  result2.cV0001responseREST.dineroMes.value;
-							dineroSema         =  result2.cV0001responseREST.dineroSema.value;
-							imprime_contadores =  String(result2.cV0001responseREST.imprimeContador.value);              
-							imprime_saldo      =  String(result2.cV0001responseREST.imprimeSaldo.value);
-							//nombreCuenta       =  result2.cV0001responseREST.nombreCuenta.value;
-							placa              =  result2.cV0001responseREST.placa.value;
-							retorno            =  result2.cV0001responseREST.retorno.value;
-							saldo              =  String(result2.cV0001responseREST.saldo.value);
-							visitasDia         =  String(result2.cV0001responseREST.visitasDia.value);
-							visitasMes         =  String(result2.cV0001responseREST.visitasMes.value);
-							visitasSema        =  String(result2.cV0001responseREST.visitasSema.value);
-							volDia             =  String(result2.cV0001responseREST.volDia.value);
-							volMes             =  String(result2.cV0001responseREST.volMes.value);
-							volSema            =  String(result2.cV0001responseREST.volSema.value);
-							
-							console.log("Termina post");
-							//b_enviada = 'TRUE';
-							error_local = '0';
-							save_sale_rec();
-						});
-					}, function(err) {
-						console.log(err.stack);
-						console.log("Termina post con error");
-						error_local = '1';
-						b_enviada = 'FALSE'; 
-						printport.write('No se logró enviar al servidor\n\n'); //Informa que no se pudo subir venta a remoto
-						printport.write('*****VENTA ALMACENADA LOCAL*****\n\n');
-						save_sale_rec();    /// Guarda venta cuando no hay conexión a servidor
+						console.log("Termina post");
+						//b_enviada = 'TRUE';
+						error_local = '0';
+						save_sale_rec();
 					});
-				}
+				}, function(err) {
+					console.log(err.stack);
+					console.log("Termina post con error");
+					error_local = '1';
+					b_enviada = 'FALSE'; 
+					printport.write('No se logró enviar al servidor\n\n'); //Informa que no se pudo subir venta a remoto
+					printport.write('*****VENTA ALMACENADA LOCAL*****\n\n');
+					save_sale_rec();    /// Guarda venta cuando no hay conexión a servidor
+				});
+			}
 			});
-            
         }
 	});
 }
@@ -3639,11 +3644,7 @@ function print_ventaInt(){
             muxport.write(String(caraint));
             muxport.write('3');                         //Error de Operacion
             muxport.write('*');        
-            //printport.write('\n\nERROR: \n');
             
-            
-            
-    
             switch(codigoError){
                 case 0:                                         //Códigos de error enviados por Autogas
                    printport.write('\nÉXITO\n'); 
@@ -3810,6 +3811,115 @@ function print_ventaInt(){
         imp =1;
         imprime_saldo = 0;
     }
+}
+
+/*
+*********************************************************************************************************
+*                                function print_copy()
+*
+* Description : Envia los datos para imprimir la venta
+*               
+*********************************************************************************************************
+*/
+
+function print_copy(){
+	console.log("IMPRIMIENDO COPIA");
+    console.log(codigoError); 
+	pg.connect(conString, function(err, client, done){                  //conectar a la base de datos
+        if(err){
+            return console.error('error de conexion', err);
+        }else{
+			client.query(sprintf("SELECT producto, volumen, dinero, precio, idestacion, serial,km, autorizacion, id_venta,fecha,nombrecuenta,direccion,telefono,placa FROM venta  WHERE id = (SELECT MAX(id) FROM venta WHERE cara ='%1$s');", cara), function(err,result){
+				done();
+				if(err){
+					return console.error('error de envio recuperada', err); 
+				}else{					
+					var idproductocopy   = result.rows[0].producto;
+					var volumencopy      = result.rows[0].volumen;					
+					var dinerocopy       = result.rows[0].dinero;
+					var preciocopy       = result.rows[0].precio;
+					var idestacioncopy   = result.rows[0].idestacion;
+					var serialcopy       = result.rows[0].serial;
+					var kmcopy           = result.rows[0].km;
+					var autorizacioncopy = result.rows[0].autorizacion;	
+					var fechacopy        = result.rows[0].fecha;
+					var nombreCuentacopy = result.rows[0].nombrecuenta;
+					var direccioncopy    = result.rows[0].direccion;
+					var telefonocopy     = result.rows[0].telefono;
+					var id_ventacopy	 = result.rows[0].id_venta;
+					var placacopy    	 = result.rows[0].placa;
+					printport.write('  '+linea1 +'\n');
+					printport.write('   '+linea2 +'\n');
+					printport.write('      '+nit+'\n');
+					printport.write('      Tel: '+tel+'\n');
+					printport.write('  '+dir+ '\n\n');            
+					printport.write('Numero: ' +parseInt(idestacioncopy + id_ventacopy,10)+ '\n\n');            
+					
+					var f = new Date();
+					printport.write('Fecha:' + fechacopy +'\n\n');                                                      
+					if(imprime_contadores == 1){         
+						printport.write('Visitas: ' + visitasDia + 'd  ' + visitasSema + 's  ' + visitasMes + 'm  ' + '\n\n\n');
+						printport.write('Volumen dia: G' + volDia +'\n');
+						printport.write('Volumen sem: G' + volSema +'\n');
+						printport.write('Volumen mes: G' + volMes +'\n\n');
+						printport.write('Dinero dia:  $' + dineroDia +'\n');
+						printport.write('Dinero sem:  $' + dineroSema +'\n');
+						printport.write('Dinero mes:  $' + dineroMes +'\n\n'); 
+					}
+					if(serial !='0000000000000000'){
+						printport.write('Empresa:\n');
+						printport.write(String(nombreCuentacopy) + '\n');
+						printport.write('Direccion:\n');
+						printport.write(direccioncopy+'\n');
+						printport.write('Telefono:\n');
+						printport.write(telefonocopy+'\n');
+						printport.write('\n');
+						printport.write('Serial:\n');                
+						printport.write(serialcopy + '\n\n'); /*global serial*/                                   
+						printport.write('Placa: ' + placacopy +'\n');
+						printport.write('Km   : ' + kmcopy +'\n');/*global km*/
+						if(imprime_saldo == 1){        
+							printport.write('Saldo: $' + saldo + '\n\n');
+						}
+					}            
+					printport.write('Posicion: ' + cara + '\n');
+					printport.write('Producto: ');
+					switch(idproductocopy){
+						case '1':
+						   printport.write('Diesel\n'); 
+						break;
+						
+						case '2':
+						   printport.write('Corriente\n'); 
+						break; 
+						
+						case '3':
+						   printport.write('Extra\n'); 
+						break; 
+						
+						case '4':
+						   printport.write('Supreme Diesel\n'); 
+						break;                 
+					}
+					var precio1;
+					var dinero1;
+								
+					precio1 = parseFloat(preciocopy);					
+					var volumen1 = parseFloat(volumencopy);
+					printport.write('Volumen : G' + volumen1 + '\n');
+					dinero1 = parseFloat(dinerocopy);
+										
+					printport.write('PPU     : $' + String(precio1) + '\n');
+					printport.write('Dinero  : $' + String(dinero1) + '\n\n\n');
+					printport.write('Firma :'+ '\n\n');
+					printport.write('       --------------------'+ '\n\n');
+					printport.write('Cedula:' + '\n');
+					printport.write('       --------------------'+ '\n\n');
+					printport.write(footer+ '\n');
+					printport.write('\n\n\n\n\n\n\n');   									       
+				}
+			});
+	});
 }
 
 /*
