@@ -971,56 +971,134 @@ function corte_manual(){
 				        }
 				    });
                     //<!--Sumatoria de dinero de las ventas realizadas por Beagle-->
-                    
-					client.query(sprintf('SELECT SUM(CAST(dinero AS INT)) AS "dinero", SUM(CAST (volumen AS FLOAT)) AS "volumen",COUNT(dinero) FROM venta WHERE id>%1$s AND producto= CAST(%2$s AS CHAR) AND cara = CAST (%3$s AS CHAR);', last_id,String(idenproducto1),cara), function(err,result){
-						done();
-						if(err){
-							return console.error('error toma totales',err);
-						}else{
-							console.log("Primer producto");
-							console.log('Cuenta'+result.rows[0].count);
-							printport.write('Ventas ' +n_producto1+':' + String(result.rows[0].count) + '\n'); 
-							if(result.rows[0].sum==null){
-								result.rows[0].sum=0;}
-							printport.write('Total '+n_producto1+' $ :' + String(result.rows[0].dinero) + '\n');
-							printport.write('Total '+n_producto1+' G :' + String(result.rows[0].volumen) + '\n');
-							printport.write(n_producto1+' Vol. Final: ' +parseFloat(producto1)/100 + '\n\n');							
-						}
-					});
+                    if (cara == '1'){
+    					client.query(sprintf('SELECT SUM(CAST(dinero AS INT)) AS "dinero", SUM(CAST (volumen AS FLOAT)) AS "volumen",COUNT(dinero) FROM venta WHERE id>%1$s AND producto= CAST(%2$s AS CHAR) AND cara = CAST (%3$s AS CHAR);', last_id,String(idenproducto1),cara), function(err,result){
+    						done();
+    						if(err){
+    							return console.error('error toma totales',err);
+    						}else{
+    							console.log("Primer producto");
+    							console.log('Cuenta'+result.rows[0].count);
+    							printport.write('Ventas ' +n_producto1+':' + String(result.rows[0].count) + '\n'); 
+    							if(result.rows[0].dinero==null){
+    								result.rows[0].dinero  = 0;
+    							    result.rows[0].volumen = 0;
+    							}
+    							printport.write('Total '+n_producto1+' $: ' + String(result.rows[0].dinero) + '\n');
+    							printport.write('Total '+n_producto1+' G: ' + String(result.rows[0].volumen) + '\n');
+    							printport.write('\n');
+    							printport.write('Lect. Electronicas Vol: '+'\n');
+    							printport.write(n_producto1+' :  '+parseFloat(producto1)/100 + ' Gls'+ '\n\n');							
+    						}
+    					});
+                    }
+                    if (cara == '2'){
+    					client.query(sprintf('SELECT SUM(CAST(dinero AS INT)) AS "dinero", SUM(CAST (volumen AS FLOAT)) AS "volumen",COUNT(dinero) FROM venta WHERE id>%1$s AND producto= CAST(%2$s AS CHAR) AND cara = CAST (%3$s AS CHAR);', last_id,String(idenproducto1b),cara), function(err,result){
+    						done();
+    						if(err){
+    							return console.error('error toma totales',err);
+    						}else{
+    							console.log("Primer producto");
+    							console.log('Cuenta'+result.rows[0].count);
+    							printport.write('Ventas ' +n_producto1b+':' + String(result.rows[0].count) + '\n'); 
+    							if(result.rows[0].dinero==null){
+    								result.rows[0].dinero  = 0;
+    							    result.rows[0].volumen = 0;
+    							}
+    							printport.write('Total '+n_producto1b+' $: ' + String(result.rows[0].dinero) + '\n');
+    							printport.write('Total '+n_producto1b+' G: ' + String(result.rows[0].volumen) + '\n');
+    							printport.write('\n');
+    							printport.write('Lect. Electronicas Vol: '+'\n');
+    							printport.write(n_producto1b+' : '+parseFloat(producto1)/100 +' Gls'+ '\n\n');
+    						}
+    					});
+                    }
 					if(productos > 2 || productosB > 2){
 						console.log("Segundo producto");
-						client.query(sprintf('SELECT SUM(CAST(dinero AS INT)) AS "dinero", SUM(CAST (volumen AS FLOAT)) AS "volumen",COUNT(dinero) FROM venta WHERE id>%1$s AND producto= CAST(%2$s AS CHAR) AND cara = CAST (%3$s AS CHAR);', last_id,String(idenproducto2),cara), function(err,result){
-							done();
-							if(err){
-								return console.error('error toma totales', err);
-							}else{
-								console.log('Cuenta'+result.rows[0].count);
-								printport.write('Ventas '+n_producto2+':' + String(result.rows[0].count) + '\n'); 
-								if(result.rows[0].sum==null){
-									result.rows[0].sum=0;}
-								printport.write('Total '+n_producto2+' $: ' + String(result.rows[0].sum) + '\n');
-								printport.write('Total '+n_producto2+' G :' + String(result.rows[0].volumen) + '\n');
-								printport.write(n_producto2+' Vol. Final: ' + parseFloat(producto2)/100 + '\n\n');
-							}
-						});
+						if (cara == '1'){
+    						client.query(sprintf('SELECT SUM(CAST(dinero AS INT)) AS "dinero", SUM(CAST (volumen AS FLOAT)) AS "volumen",COUNT(dinero) FROM venta WHERE id>%1$s AND producto= CAST(%2$s AS CHAR) AND cara = CAST (%3$s AS CHAR);', last_id,String(idenproducto2),cara), function(err,result){
+    							done();
+    							if(err){
+    								return console.error('error toma totales', err);
+    							}else{
+    								console.log('Cuenta'+result.rows[0].count);
+    								printport.write('Ventas '+n_producto2+':' + String(result.rows[0].count) + '\n'); 
+    								if(result.rows[0].dinero==null){
+        								result.rows[0].dinero  = 0;
+        							    result.rows[0].volumen = 0;
+    						    	}
+    								printport.write('Total '+n_producto2+' $: ' + String(result.rows[0].dinero) + '\n');
+    								printport.write('Total '+n_producto2+' G: ' + String(result.rows[0].volumen) + '\n');
+    								printport.write('\n');
+    							    printport.write('Lect. Electronicas Vol: '+'\n');
+    							    printport.write(n_producto2+' : '+parseFloat(producto2)/100 +' Gls'+ '\n\n');
+    							}
+    						});
+						}
+						if (cara == '2'){
+    						client.query(sprintf('SELECT SUM(CAST(dinero AS INT)) AS "dinero", SUM(CAST (volumen AS FLOAT)) AS "volumen",COUNT(dinero) FROM venta WHERE id>%1$s AND producto= CAST(%2$s AS CHAR) AND cara = CAST (%3$s AS CHAR);', last_id,String(idenproducto2b),cara), function(err,result){
+    							done();
+    							if(err){
+    								return console.error('error toma totales', err);
+    							}else{
+    								console.log('Cuenta'+result.rows[0].count);
+    								printport.write('Ventas '+n_producto2b+' : ' + String(result.rows[0].count) + '\n'); 
+    								if(result.rows[0].dinero==null){
+        								result.rows[0].dinero  = 0;
+        							    result.rows[0].volumen = 0;
+    						    	}
+    								printport.write('Total '+n_producto2b+' $: ' + String(result.rows[0].dinero) + '\n');
+    								printport.write('Total '+n_producto2b+' G: ' + String(result.rows[0].volumen) + '\n');
+    								printport.write('\n');
+    							    printport.write('Lect. Electronicas Vol: '+'\n');
+    							    printport.write(n_producto2b+' : '+parseFloat(producto2)/100 +' Gls'+ '\n\n');
+    							}
+    						});
+						}
 					}
 					
                     if (productos > 5 || productosB > 5){
 						console.log("Tercer producto");
-						client.query(sprintf('SELECT SUM(CAST(dinero AS INT)) AS "dinero", SUM(CAST (volumen AS FLOAT)) AS "volumen",COUNT(dinero) FROM venta WHERE id>%1$s AND producto= CAST(%2$s AS CHAR) AND cara = CAST (%3$s AS CHAR);', last_id,String(idenproducto3),cara), function(err,result){
-							done();
-							if(err){
-								return console.error('error toma totales', err);
-							}else{
-								console.log('Cuenta'+result.rows[0].count);
-								printport.write('Ventas '+n_producto3+':' + String(result.rows[0].count) + '\n'); 
-								if(result.rows[0].sum==null){
-								result.rows[0].sum=0;}
-								printport.write('Total '+n_producto3+' $: ' + String(result.rows[0].sum) + '\n');
-								printport.write('Total '+n_producto3+' G :' + String(result.rows[0].volumen) + '\n');
-								printport.write(n_producto3+' Vol. Final: ' + parseFloat(producto3)/100 + '\n\n');
-							} 
-						});
+						if (cara == '1'){
+    						client.query(sprintf('SELECT SUM(CAST(dinero AS INT)) AS "dinero", SUM(CAST (volumen AS FLOAT)) AS "volumen",COUNT(dinero) FROM venta WHERE id>%1$s AND producto= CAST(%2$s AS CHAR) AND cara = CAST (%3$s AS CHAR);', last_id,String(idenproducto3),cara), function(err,result){
+    							done();
+    							if(err){
+    								return console.error('error toma totales', err);
+    							}else{
+    								console.log('Cuenta'+result.rows[0].count);
+    								printport.write('Ventas '+n_producto3+' : ' + String(result.rows[0].count) + '\n'); 
+    								if(result.rows[0].dinero==null){
+        								result.rows[0].dinero  = 0;
+        							    result.rows[0].volumen = 0;
+    						    	}
+    								printport.write('Total '+n_producto3+' $: ' + String(result.rows[0].dinero) + '\n');
+    								printport.write('Total '+n_producto3+' G: ' + String(result.rows[0].volumen) + '\n');
+    								printport.write('\n');
+    							    printport.write('Lect. Electronicas Vol: '+'\n');
+    							    printport.write(n_producto3+' : '+parseFloat(producto3)/100 +' Gls'+ '\n\n');
+    							} 
+    						});
+						}
+						if (cara == '2'){
+    						client.query(sprintf('SELECT SUM(CAST(dinero AS INT)) AS "dinero", SUM(CAST (volumen AS FLOAT)) AS "volumen",COUNT(dinero) FROM venta WHERE id>%1$s AND producto= CAST(%2$s AS CHAR) AND cara = CAST (%3$s AS CHAR);', last_id,String(idenproducto3b),cara), function(err,result){
+    							done();
+    							if(err){
+    								return console.error('error toma totales', err);
+    							}else{
+    								console.log('Cuenta'+result.rows[0].count);
+    								printport.write('Ventas '+n_producto3b+':' + String(result.rows[0].count) + '\n'); 
+    								if(result.rows[0].dinero==null){
+        								result.rows[0].dinero  = 0;
+        							    result.rows[0].volumen = 0;
+    						    	}
+    								printport.write('Total '+n_producto3b+' $: ' + String(result.rows[0].dinero) + '\n');
+    								printport.write('Total '+n_producto3b+' G: ' + String(result.rows[0].volumen) + '\n');
+    								printport.write('\n');
+    							    printport.write('Lect. Electronicas Vol: '+'\n');
+    							    printport.write(n_producto3b+' : '+parseFloat(producto3)/100 + +' Gls'+ '\n\n');
+    							} 
+    						});
+						}
 						
 					}
                     if(imprime_contadores == 1){       
@@ -1180,7 +1258,7 @@ function rx_data_mux(data){
                 }  
                 console.log('Km: '+km); 
                 var f = new Date();
-                fecha = f.getDate() + "-" + (f.getMonth() +1) + "-" + f.getFullYear() + ' ' + f.getHours() + ':' + f.getMinutes();
+                fecha = f.getDate() + "-" + (f.getMonth() +1) + "-" + f.getFullYear() + ' ' + f.getHours() + '_' + f.getMinutes();
                 console.log('Fecha: '+fecha);
                 muxport.write('OK');
                 var n_id = idestacion + id_venta;
@@ -1999,7 +2077,7 @@ function autorizaMux(){
                printport.write('\n…XITO\n'); 
             break; 
             case 100:
-               printport.write('\nEL SERIAL DEL VEHICULO  NO EXISTE\n'); 
+               printport.write('\nEL SERIAL: '+ serial +'\n'+' DEL VEHICULO  NO EXISTE\n'); 
             break; 
             case 200:
                printport.write('\nPARAMETROS DE ENTRADA\n'); 
@@ -4347,7 +4425,25 @@ function watchful(){
     enviaInternet();
     clearInterval(watchInt);
     var f = new Date();
-    if((f.getHours()=='14')&&(f.getMinutes()=='0')&&(corte_ok==0)){
+    if((f.getHours()=='20')&&(f.getMinutes()=='40')&&(corte_ok==0)){
+        printport.write('MOMENTO DE CORTE\n');
+        printport.write('REALICE CIERRE DE TURNO\n');
+        printport.write('PARA INICIAR VENTA\n\n\n\n\n\n');              //A la hora programada se ejecuta la funcion para obligar a corte
+        printport.write('*** CORTE PROGRAMADO***\n');
+        permite  = 0;
+        corte_ok = 1;
+        console.log('Pregunta');
+    }
+    if((f.getHours()=='21')&&(f.getMinutes()=='0')&&(corte_ok==0)){
+        printport.write('MOMENTO DE CORTE\n');
+        printport.write('REALICE CIERRE DE TURNO\n');
+        printport.write('PARA INICIAR VENTA\n\n\n\n\n\n');              //A la hora programada se ejecuta la funcion para obligar a corte
+        printport.write('*** CORTE PROGRAMADO***\n');
+        permite  = 0;
+        corte_ok = 1;
+        console.log('Pregunta');
+    }
+    if((f.getHours()=='21')&&(f.getMinutes()=='20')&&(corte_ok==0)){
         printport.write('MOMENTO DE CORTE\n');
         printport.write('REALICE CIERRE DE TURNO\n');
         printport.write('PARA INICIAR VENTA\n\n\n\n\n\n');              //A la hora programada se ejecuta la funcion para obligar a corte
