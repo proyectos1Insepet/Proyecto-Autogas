@@ -1095,7 +1095,7 @@ function corte_manual(){
     								printport.write('Total '+n_producto3b+' G: ' + String(result.rows[0].volumen) + '\n');
     								printport.write('\n');
     							    printport.write('Lect. Electronicas Vol: '+'\n');
-    							    printport.write(n_producto3b+' : '+parseFloat(producto3)/100 + +' Gls'+ '\n\n');
+    							    printport.write(n_producto3b+' : '+parseFloat(producto3)/100 + ' Gls'+ '\n\n');
     							} 
     						});
 						}
