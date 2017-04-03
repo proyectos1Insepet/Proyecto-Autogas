@@ -24,6 +24,7 @@ var rest_autorizar  = require("request");
 var sp              = require("serialport");
 var sp2             = require("serialport");
 var pg              = require('pg');
+var exec            = require('exec');
 /*
 *********************************************************************************************************
 *                                    DECLARACION DE VARIABLES
@@ -146,6 +147,7 @@ var direccionint;
 var placaint;
 var printInt;
 var printInt2;
+var ActInternet;
 
 /********************Arreglos**************************************/            
 
@@ -1917,36 +1919,51 @@ function rx_data_mux(data){
 function rest_auto(){
     trycatch(	
 		function() {
-			var opt_rest_autorizar = {url: sprintf(url_auto+"/rest/Authorize/%1$s/%2$s/%3$s/%4$s/%5$s/%6$s/%7$s", serial, idproducto, idestacion, precio, tipopreset, preset, km),method: "POST"};  
-			rest_autorizar(opt_rest_autorizar,function(error, response, body) {					 
-					var elements = ds.deserialize(body);
-					var jsonString = ds.getJson(elements);			
-					console.log(jsonString);			
-					var result = JSON.parse(jsonString);            //Respuesta autogas en autorización			
-					cantidadAutorizada  =  String(result.aT0001responseREST.cantidadAutorizada.value);
-					codigoRetorno       =  result.aT0001responseREST.codigoRetorno.value;
-					direccion           =  result.aT0001responseREST.direccion.value;
-					telefono            =  result.aT0001responseREST.telefono.value;
-					idproducto          =  result.aT0001responseREST.idproducto.value;
-					numeroAutorizacion  =  result.aT0001responseREST.numeroAutorizacion.value;
-					nombreCuenta        =  result.aT0001responseREST.nombreCuenta.value;
-					placa               =  result.aT0001responseREST.placa.value;  
-					retorno             =  result.aT0001responseREST.retorno.value;
-					tipoConvenio        =  result.aT0001responseREST.tipoConvenio.value;
-					tipoRetorno         =  result.aT0001responseREST.tipoRetorno.value;
-					trama               =  result.aT0001responseREST.trama.value;
-					valorConvenio       =  String(result.aT0001responseREST.valorConvenio.value);
-					if(serial !='0000000000000000'){
-						autorizacion =  String(numeroAutorizacion);
-					}else{
-						autorizacion = '00000000-0000-0000-0000-000000000000';
-					}
-					autorizaMux();
-					console.log(direccion);
-					console.log(placa);
-					console.log("Termina post");
+			pg.connect(conString, function(err, client, done){
+				if(err){             
+				  return console.error('error de conexion 1', err);
+				}else{
+					var opt_rest_autorizar = {url: sprintf(url_auto+"/rest/Authorize/%1$s/%2$s/%3$s/%4$s/%5$s/%6$s/%7$s", serial, idproducto, idestacion, precio, tipopreset, preset, km),method: "POST"};  
+					rest_autorizar(opt_rest_autorizar,function(error, response, body) {					 
+							var elements = ds.deserialize(body);
+							var jsonString = ds.getJson(elements);			
+							console.log(jsonString);			
+							var result = JSON.parse(jsonString);            //Respuesta autogas en autorización			
+							cantidadAutorizada  =  String(result.aT0001responseREST.cantidadAutorizada.value);
+							codigoRetorno       =  result.aT0001responseREST.codigoRetorno.value;
+							direccion           =  result.aT0001responseREST.direccion.value;
+							telefono            =  result.aT0001responseREST.telefono.value;
+							idproducto          =  result.aT0001responseREST.idproducto.value;
+							numeroAutorizacion  =  result.aT0001responseREST.numeroAutorizacion.value;
+							nombreCuenta        =  result.aT0001responseREST.nombreCuenta.value;
+							placa               =  result.aT0001responseREST.placa.value;  
+							retorno             =  result.aT0001responseREST.retorno.value;
+							tipoConvenio        =  result.aT0001responseREST.tipoConvenio.value;
+							tipoRetorno         =  result.aT0001responseREST.tipoRetorno.value;
+							trama               =  result.aT0001responseREST.trama.value;
+							valorConvenio       =  String(result.aT0001responseREST.valorConvenio.value);
+							if(serial !='0000000000000000'){
+								autorizacion =  String(numeroAutorizacion);
+							}else{
+								autorizacion = '00000000-0000-0000-0000-000000000000';
+							}
+							autorizaMux();
+							console.log(direccion);
+							console.log(placa);
+							console.log("Termina post");
+							client.query("UPDATE conexion SET internet = '0';", function(err,result){
+								done();
+								if(err){                        
+									return console.error('error de conexion', err);
+								}else{ //codigo a ejecutar si no hay problema de query
+									
+									
+								}
+							});
+						}
+					);
 				}
-			);
+			});
 		},  function(err) {                              //error en el envio de datos
 				console.log(err.stack);
 				console.log("Termina post con error");
@@ -1965,6 +1982,7 @@ function rest_auto(){
 	);
     
 }
+
 /*
 *********************************************************************************************************
 *                                function save_auto()
@@ -4334,6 +4352,16 @@ function enviaInternet(){
 		            }
 	            }
             });
+        
+            client.query("SELECT internet FROM conexion;", function(err,result){
+                done();
+                if(err){                        
+                    return console.error('error de conexion', err);
+                }else{
+                    ActInternet = result.rows[0].internet;
+                    console.log("Internet activo: "+ActInternet);
+                }
+            });
         }
     }); 
 }
@@ -4419,6 +4447,7 @@ function watchful(){
     console.log("Vigilando");
     enviaInternet();
     clearInterval(watchInt);
+    
     var f = new Date();
     if((f.getHours()=='6')&&(f.getMinutes()=='0')&&(corte_ok==0)){
         printport.write('MOMENTO DE CORTE\n');
