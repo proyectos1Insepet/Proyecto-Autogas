@@ -1915,59 +1915,54 @@ function rx_data_mux(data){
 */
 
 function rest_auto(){
-    trycatch(function() {
-        var opt_rest_autorizar = {
-                url: sprintf(url_auto+"/rest/Authorize/%1$s/%2$s/%3$s/%4$s/%5$s/%6$s/%7$s", serial, idproducto, idestacion, precio, tipopreset, preset, km),                
-                method: "POST",
-            };  
-        rest_autorizar(opt_rest_autorizar, 
-        function(error, response, body) {
-      
-            var elements = ds.deserialize(body);
-            var jsonString = ds.getJson(elements);
-        
-            console.log(jsonString);
-        
-            var result = JSON.parse(jsonString);            //Respuesta autogas en autorización
-        
-            cantidadAutorizada  =  String(result.aT0001responseREST.cantidadAutorizada.value);
-            codigoRetorno       =  result.aT0001responseREST.codigoRetorno.value;
-            direccion           =  result.aT0001responseREST.direccion.value;
-            telefono            =  result.aT0001responseREST.telefono.value;
-            idproducto          =  result.aT0001responseREST.idproducto.value;
-            numeroAutorizacion  =  result.aT0001responseREST.numeroAutorizacion.value;
-            nombreCuenta        =  result.aT0001responseREST.nombreCuenta.value;
-            placa               =  result.aT0001responseREST.placa.value;  
-            retorno             =  result.aT0001responseREST.retorno.value;
-            tipoConvenio        =  result.aT0001responseREST.tipoConvenio.value;
-            tipoRetorno         =  result.aT0001responseREST.tipoRetorno.value;
-            trama               =  result.aT0001responseREST.trama.value;
-            valorConvenio       =  String(result.aT0001responseREST.valorConvenio.value);
-            if(serial !='0000000000000000'){
-                autorizacion =  String(numeroAutorizacion);
-            }else{
-                autorizacion = '00000000-0000-0000-0000-000000000000';
-            }
-            autorizaMux();
-            console.log(direccion);
-            console.log(placa);
-            console.log("Termina post");
-        });
-    }, function(err) {                              //error en el envio de datos
-        console.log(err.stack);
-        console.log("Termina post con error");
-        muxport.write('BBB');
-        muxport.write('E');
-        muxport.write(String(cara));
-        muxport.write('1');                         //Limpia estado del mux e inicia pantalla
-        muxport.write('*');
-        console.log("Serial: "+ serial + "Old: " + OldSerial);
-        if((printRestAuto == 1)  && (serial != OldSerial)){
-            OldSerial = serial;
-            printRestAuto = 0;
-            printport.write('\n\nLos datos no se lograron\nenviar al servidor.\n\n\n\n\n\n\n');
-        }
-    });
+    trycatch(	
+		function() {
+			var opt_rest_autorizar = {url: sprintf(url_auto+"/rest/Authorize/%1$s/%2$s/%3$s/%4$s/%5$s/%6$s/%7$s", serial, idproducto, idestacion, precio, tipopreset, preset, km),method: "POST"};  
+			rest_autorizar(opt_rest_autorizar,function(error, response, body) {					 
+					var elements = ds.deserialize(body);
+					var jsonString = ds.getJson(elements);			
+					console.log(jsonString);			
+					var result = JSON.parse(jsonString);            //Respuesta autogas en autorización			
+					cantidadAutorizada  =  String(result.aT0001responseREST.cantidadAutorizada.value);
+					codigoRetorno       =  result.aT0001responseREST.codigoRetorno.value;
+					direccion           =  result.aT0001responseREST.direccion.value;
+					telefono            =  result.aT0001responseREST.telefono.value;
+					idproducto          =  result.aT0001responseREST.idproducto.value;
+					numeroAutorizacion  =  result.aT0001responseREST.numeroAutorizacion.value;
+					nombreCuenta        =  result.aT0001responseREST.nombreCuenta.value;
+					placa               =  result.aT0001responseREST.placa.value;  
+					retorno             =  result.aT0001responseREST.retorno.value;
+					tipoConvenio        =  result.aT0001responseREST.tipoConvenio.value;
+					tipoRetorno         =  result.aT0001responseREST.tipoRetorno.value;
+					trama               =  result.aT0001responseREST.trama.value;
+					valorConvenio       =  String(result.aT0001responseREST.valorConvenio.value);
+					if(serial !='0000000000000000'){
+						autorizacion =  String(numeroAutorizacion);
+					}else{
+						autorizacion = '00000000-0000-0000-0000-000000000000';
+					}
+					autorizaMux();
+					console.log(direccion);
+					console.log(placa);
+					console.log("Termina post");
+				}
+			);
+		},  function(err) {                              //error en el envio de datos
+				console.log(err.stack);
+				console.log("Termina post con error");
+				muxport.write('BBB');
+				muxport.write('E');
+				muxport.write(String(cara));
+				muxport.write('1');                         //Limpia estado del mux e inicia pantalla
+				muxport.write('*');
+				console.log("Serial: "+ serial + "Old: " + OldSerial);
+				if((printRestAuto == 1)  && (serial != OldSerial)){
+					OldSerial = serial;
+					printRestAuto = 0;
+					printport.write('\n\nLos datos no se lograron\nenviar al servidor.\n\n\n\n\n\n\n');
+				}
+			}
+	);
     
 }
 /*
@@ -4425,7 +4420,7 @@ function watchful(){
     enviaInternet();
     clearInterval(watchInt);
     var f = new Date();
-    if((f.getHours()=='20')&&(f.getMinutes()=='40')&&(corte_ok==0)){
+    if((f.getHours()=='6')&&(f.getMinutes()=='0')&&(corte_ok==0)){
         printport.write('MOMENTO DE CORTE\n');
         printport.write('REALICE CIERRE DE TURNO\n');
         printport.write('PARA INICIAR VENTA\n\n\n\n\n\n');              //A la hora programada se ejecuta la funcion para obligar a corte
@@ -4434,7 +4429,7 @@ function watchful(){
         corte_ok = 1;
         console.log('Pregunta');
     }
-    if((f.getHours()=='21')&&(f.getMinutes()=='0')&&(corte_ok==0)){
+    if((f.getHours()=='14')&&(f.getMinutes()=='0')&&(corte_ok==0)){
         printport.write('MOMENTO DE CORTE\n');
         printport.write('REALICE CIERRE DE TURNO\n');
         printport.write('PARA INICIAR VENTA\n\n\n\n\n\n');              //A la hora programada se ejecuta la funcion para obligar a corte
@@ -4443,7 +4438,7 @@ function watchful(){
         corte_ok = 1;
         console.log('Pregunta');
     }
-    if((f.getHours()=='21')&&(f.getMinutes()=='20')&&(corte_ok==0)){
+    if((f.getHours()=='22')&&(f.getMinutes()=='0')&&(corte_ok==0)){
         printport.write('MOMENTO DE CORTE\n');
         printport.write('REALICE CIERRE DE TURNO\n');
         printport.write('PARA INICIAR VENTA\n\n\n\n\n\n');              //A la hora programada se ejecuta la funcion para obligar a corte
