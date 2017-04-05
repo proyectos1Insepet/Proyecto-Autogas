@@ -49,7 +49,6 @@ var direccion;
 var telefono;
 var idproducto;
 var numeroAutorizacion;
-var retorno;
 var tipoConvenio;
 var tipoRetorno;
 var trama;
@@ -59,7 +58,6 @@ var error_local;
 var imp;
 var imp2;
 var imprec;
-var SinImpresion;
 var printrec;
 var printRestAuto;
 var OldSerial;
@@ -113,7 +111,6 @@ var nit;
 var tel;
 var dir;
 var footer;
-var idestacionefectivo;
 var url_auto;
 var url_save;
 var ventaPendiente;
@@ -126,9 +123,6 @@ var recuperaProducto2;
 var subeInternet;
 var subeInternet2;
 var dineroRecuperado;
-var enable_count;
-var contador;
-var saveEfectivo;
 var insertado;
 var caraint;
 var serialint;
@@ -176,6 +170,7 @@ var producto1       = new Buffer(12);
 var producto2       = new Buffer(12);
 var producto3       = new Buffer(12);
 var watchInt;
+var watch;
 /*
 *********************************************************************************************************
 *                                    TOMA DE DATOS PARA RECIBOS
@@ -215,7 +210,6 @@ function reinicio(error){
                     tel = result.rows[0].tel;
                     dir = result.rows[0].dir;
                     footer = result.rows[0].footer;
-                    idestacionefectivo = result.rows[0].idestacion;
                     url_auto = result.rows[0].url;
                     url_save = result.rows[0].url_save;
                     }
@@ -1265,12 +1259,10 @@ function rx_data_mux(data){
                 muxport.write('OK');
                 var n_id = idestacion + id_venta;
                 if(serial =='0000000000000000'){
-                    saveEfectivo = 1;
                     insertado = 0;
                     autorizaefec = '00000000-0000-0000-0000-000000000000';
                     var b = sprintf(url_save+"/rest/UploadSale/%1$s/%2$s/%3$s/%4$s/%5$s/%6$s/%7$s/%8$s/%9$s/%10$s/%11$s/%12$s", cara, idproducto, volumen, dinero, precio, idestacion, serial, autorizaefec, n_id, km, fecha, fecha);
                 }else{
-                    saveEfectivo = 0;
                     insertado = 1;
                     b = sprintf(url_save+"/rest/UploadSale/%1$s/%2$s/%3$s/%4$s/%5$s/%6$s/%7$s/%8$s/%9$s/%10$s/%11$s/%12$s", cara, idproducto, volumen, dinero, precio, idestacion, serial, autorizacion, n_id, km, fecha, fecha);
                 }
@@ -1917,6 +1909,8 @@ function rx_data_mux(data){
 */
 
 function rest_auto(){
+    clearInterval(watch);
+    clearInterval(watchInt);
     trycatch(	
 		function() {
 			pg.connect(conString, function(err, client, done){
@@ -1951,7 +1945,7 @@ function rest_auto(){
 							console.log(direccion);
 							console.log(placa);
 							console.log("Termina post");
-							client.query("UPDATE conexion SET internet = '0';", function(err,result){
+							client.query(sprintf("INSERT INTO strtran (envio, respuesta) VALUES ('%1$s','%2$s');",sprintf(url_auto+"/rest/Authorize/%1$s/%2$s/%3$s/%4$s/%5$s/%6$s/%7$s", serial, idproducto, idestacion, precio, tipopreset, preset, km),jsonString), function(err,result){
 								done();
 								if(err){                        
 									return console.error('error de conexion', err);
@@ -1976,8 +1970,14 @@ function rest_auto(){
 				if((printRestAuto == 1)  && (serial != OldSerial)){
 					OldSerial = serial;
 					printRestAuto = 0;
-					printport.write('\n\nLos datos no se lograron\nenviar al servidor.\n\n\n\n\n\n\n');
+					printport.write('\nNo se obtuvo \nrespuesta del servidor.\n\n\n\n');
 				}
+				if(!ActInternet  && (serial != OldSerial)){
+				    printport.write('  VERIFIQUE CONEXION DE RED.  \n');
+				    printport.write(' NO HAY CONEXION CON INTERNET.  \n\n\n\n');
+				}
+				watch    = setInterval(watchful, 60000);//Revisa el estado de las banderas
+                watchInt = setInterval(enviaInternetSeg, 60000);//Revisa el estado de las banderas
 			}
 	);
     
@@ -2622,74 +2622,86 @@ function rest_sale_internetSeg(){
 function rest_sale(){
     var n_id = idestacion + id_venta;
     clearInterval(watch);
-    trycatch(function() {
-        var opt_rest_venta = {
-                url: sprintf(url_save+"/rest/UploadSale/%1$s/%2$s/%3$s/%4$s/%5$s/%6$s/%7$s/%8$s/%9$s/%10$s/%11$s/%12$s", cara, idproducto, volumen, dinero, precio, idestacion, serial, autorizacion, n_id, km, fecha, fecha), /*global autorizacion*//*global idestacion*/
-                method: "POST",
-            };   
-            console.log(n_id);
-        rest_venta(opt_rest_venta, 
-        function(error, response, body) {
-                
-            var elements2 = ds.deserialize(body);
-            var jsonString2 = ds.getJson(elements2);        
-            console.log(jsonString2);        
-            var result2 = JSON.parse(jsonString2);        
-            codigoError        =  result2.cV0001responseREST.codError.value;
-            dineroDia          =  result2.cV0001responseREST.dineroDia.value;           //Resultados enviados por Autogas
-            dineroMes          =  result2.cV0001responseREST.dineroMes.value;
-            dineroSema         =  result2.cV0001responseREST.dineroSema.value;
-            imprime_contadores =  String(result2.cV0001responseREST.imprimeContador.value);              
-            imprime_saldo      =  String(result2.cV0001responseREST.imprimeSaldo.value);
-            //nombreCuenta       =  result2.cV0001responseREST.nombreCuenta.value;
-            placa              =  result2.cV0001responseREST.placa.value;
-            retorno            =  result2.cV0001responseREST.retorno.value;
-            saldo              =  String(result2.cV0001responseREST.saldo.value);
-            visitasDia         =  String(result2.cV0001responseREST.visitasDia.value);
-            visitasMes         =  String(result2.cV0001responseREST.visitasMes.value);
-            visitasSema        =  String(result2.cV0001responseREST.visitasSema.value);
-            volDia             =  String(result2.cV0001responseREST.volDia.value);
-            volMes             =  String(result2.cV0001responseREST.volMes.value);
-            volSema            =  String(result2.cV0001responseREST.volSema.value);
-			console.log("Cara JSON "+ cara);
-            if(cara =='1'){
-                imp =0;
-            }
-            if(cara =='2'){
-                imp2 =0;
-            }
-            console.log("Termina post");
-            b_enviada = 'TRUE';
-            error_local = '0';
-            if(serial =='0000000000000000'){
-                save_sale_ef();    
-            }
-            if(serial != '0000000000000000' ){
-                save_sale();
-            }
-        });
-    }, function(err) {
-        console.log(err.stack);
-        console.log("Termina post con error");
-        error_local = '1';
-        b_enviada = 'FALSE'; 
-        if(cara =='1' && imp ==0){
-            printport.write('No se logro enviar al servidor\n\n'); //Informa que no se pudo subir venta a remoto
-            printport.write('*****VENTA ALMACENADA LOCAL*****\n');
-            printport.write('****SIN CONEXION A INTERNET*****\n');            
-        }
-        if(cara =='2' && imp2 ==0){
-            printport.write('No se logro enviar al servidor\n\n'); //Informa que no se pudo subir venta a remoto
-            printport.write('*****VENTA ALMACENADA LOCAL*****\n');
-            printport.write('****SIN CONEXION A INTERNET*****\n');            
-        }
-        if(serial =='0000000000000000'){
-            save_sale_ef();    
-        }
-        if(serial != '0000000000000000'){
-            save_sale();
-        }
-    });
+    clearInterval(watchInt);
+    trycatch(
+	    function() {
+		pg.connect(conString, function(err, client, done){
+			if(err){             
+			  return console.error('error de conexion 1', err);
+			}else{
+				var opt_rest_venta = {url: sprintf(url_save+"/rest/UploadSale/%1$s/%2$s/%3$s/%4$s/%5$s/%6$s/%7$s/%8$s/%9$s/%10$s/%11$s/%12$s", cara, idproducto, volumen, dinero, precio, idestacion, serial, autorizacion, n_id, km, fecha, fecha), method: "POST"}; /*global autorizacion*//*global idestacion*/   
+				console.log(n_id);
+				rest_venta(opt_rest_venta,function(error, response, body) {							
+						var elements2 = ds.deserialize(body);
+						var jsonString2 = ds.getJson(elements2);        
+						console.log(jsonString2);        
+						var result2 = JSON.parse(jsonString2);        
+						codigoError        =  result2.cV0001responseREST.codError.value;
+						dineroDia          =  result2.cV0001responseREST.dineroDia.value;           //Resultados enviados por Autogas
+						dineroMes          =  result2.cV0001responseREST.dineroMes.value;
+						dineroSema         =  result2.cV0001responseREST.dineroSema.value;
+						imprime_contadores =  String(result2.cV0001responseREST.imprimeContador.value);              
+						imprime_saldo      =  String(result2.cV0001responseREST.imprimeSaldo.value);						
+						placa              =  result2.cV0001responseREST.placa.value;
+						retorno            =  result2.cV0001responseREST.retorno.value;
+						saldo              =  String(result2.cV0001responseREST.saldo.value);
+						visitasDia         =  String(result2.cV0001responseREST.visitasDia.value);
+						visitasMes         =  String(result2.cV0001responseREST.visitasMes.value);
+						visitasSema        =  String(result2.cV0001responseREST.visitasSema.value);
+						volDia             =  String(result2.cV0001responseREST.volDia.value);
+						volMes             =  String(result2.cV0001responseREST.volMes.value);
+						volSema            =  String(result2.cV0001responseREST.volSema.value);
+						if(cara =='1'){
+							imp =0;
+						}
+						if(cara =='2'){
+							imp2 =0;
+						}
+						console.log("Termina post");
+						b_enviada = 'TRUE';
+						error_local = '0';
+						if(serial =='0000000000000000'){
+							save_sale_ef();    
+						}
+						if(serial != '0000000000000000' ){
+							save_sale();
+						}
+						client.query(sprintf("INSERT INTO strtran (envio, respuesta) VALUES ('%1$s','%2$s');",sprintf(url_save+"/rest/UploadSale/%1$s/%2$s/%3$s/%4$s/%5$s/%6$s/%7$s/%8$s/%9$s/%10$s/%11$s/%12$s", cara, idproducto, volumen, dinero, precio, idestacion, serial, autorizacion, n_id, km, fecha, fecha),jsonString2), function(err,result){
+							done();
+							if(err){                        
+								return console.error('error de conexion', err);
+							}else{ //codigo a ejecutar si no hay problema de query												
+							}
+						});
+					}
+				);
+			}			
+		});			
+		}, function(err) {
+			console.log(err.stack);
+			console.log("Termina post con error");
+			error_local = '1';
+			b_enviada = 'FALSE'; 
+			if(cara =='1' && imp ==0){
+				printport.write('No se logro enviar al servidor\n\n'); //Informa que no se pudo subir venta a remoto
+				printport.write('*****VENTA ALMACENADA LOCAL*****\n');
+				printport.write('****SIN CONEXION A INTERNET*****\n');            
+			}
+			if(cara =='2' && imp2 ==0){
+				printport.write('No se logro enviar al servidor\n\n'); //Informa que no se pudo subir venta a remoto
+				printport.write('*****VENTA ALMACENADA LOCAL*****\n');
+				printport.write('****SIN CONEXION A INTERNET*****\n');            
+			}
+			if(serial =='0000000000000000'){
+				save_sale_ef();    
+			}
+			if(serial != '0000000000000000'){
+				save_sale();
+			}
+			watch    = setInterval(watchful, 60000);//Revisa el estado de las banderas
+            watchInt = setInterval(enviaInternetSeg, 60000);//Revisa el estado de las banderas
+		}	
+	);
 }
 
 /*
@@ -3074,6 +3086,8 @@ function print_venta(){
         console.log("FIN IMPRIMIENDO");
         imprime_saldo = 0;
         imp =1;
+        watch    = setInterval(watchful, 60000);//Revisa el estado de las banderas
+        watchInt = setInterval(enviaInternetSeg, 60000);           //Revisa el estado de las banderas
     }
 }
 
@@ -4309,7 +4323,6 @@ function enviaInternet(){
 		            console.log("Internet>>" + subeInternet);
 		            if (subeInternet){
 		                console.log("No hay que subir venta 1");
-		                watchInt = setInterval(enviaInternetSeg, 30000);           //Revisa el estado de las banderas
 		            }else{
 		                if(result.rows[0].volumen != null){
 		                    caraint         = '1';
@@ -4446,8 +4459,6 @@ function enviaInternetSeg(){
 function watchful(){
     console.log("Vigilando");
     enviaInternet();
-    clearInterval(watchInt);
-    
     var f = new Date();
     if((f.getHours()=='6')&&(f.getMinutes()=='0')&&(corte_ok==0)){
         printport.write('MOMENTO DE CORTE\n');
@@ -4489,7 +4500,8 @@ function watchful(){
 
 //muxport.open(abrir);                    //Abre la comunicacion con el mux
 //printport.open(abrir_print);            //Abre la comunicacion con el mux
-var watch    = setInterval(watchful, 60000);           //Revisa el estado de las banderas
+watch    = setInterval(watchful, 60000);//Revisa el estado de las banderas
+watchInt = setInterval(enviaInternetSeg, 60000);//Revisa el estado de las banderas
 
 
 

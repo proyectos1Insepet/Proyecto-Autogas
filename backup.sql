@@ -29,6 +29,17 @@ SET default_tablespace = '';
 SET default_with_oids = false;
 
 --
+-- Name: conexion; Type: TABLE; Schema: public; Owner: postgres; Tablespace: 
+--
+
+CREATE TABLE conexion (
+    internet boolean
+);
+
+
+ALTER TABLE public.conexion OWNER TO postgres;
+
+--
 -- Name: cortem; Type: TABLE; Schema: public; Owner: postgres; Tablespace: 
 --
 
@@ -114,6 +125,40 @@ CREATE TABLE recuperacion (
 ALTER TABLE public.recuperacion OWNER TO postgres;
 
 --
+-- Name: strtran; Type: TABLE; Schema: public; Owner: postgres; Tablespace: 
+--
+
+CREATE TABLE strtran (
+    idstring integer NOT NULL,
+    envio text,
+    respuesta text
+);
+
+
+ALTER TABLE public.strtran OWNER TO postgres;
+
+--
+-- Name: strtran_idstring_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE strtran_idstring_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.strtran_idstring_seq OWNER TO postgres;
+
+--
+-- Name: strtran_idstring_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE strtran_idstring_seq OWNED BY strtran.idstring;
+
+
+--
 -- Name: venta; Type: TABLE; Schema: public; Owner: postgres; Tablespace: 
 --
 
@@ -170,10 +215,26 @@ ALTER TABLE ONLY cortem ALTER COLUMN id SET DEFAULT nextval('cortem_id_seq'::reg
 
 
 --
+-- Name: idstring; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY strtran ALTER COLUMN idstring SET DEFAULT nextval('strtran_idstring_seq'::regclass);
+
+
+--
 -- Name: id; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY venta ALTER COLUMN id SET DEFAULT nextval('venta_id_seq'::regclass);
+
+
+--
+-- Data for Name: conexion; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY conexion (internet) FROM stdin;
+f
+\.
 
 
 --
@@ -190,7 +251,7 @@ COPY cortem (id, ultima_venta, u_vol, u_vol_2, u_vol_3, idpos) FROM stdin;
 -- Name: cortem_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('cortem_id_seq', 3, true);
+SELECT pg_catalog.setval('cortem_id_seq', 2, true);
 
 
 --
@@ -198,8 +259,8 @@ SELECT pg_catalog.setval('cortem_id_seq', 3, true);
 --
 
 COPY productos (diesel, corriente, extra, s_diesel, id) FROM stdin;
-2	1	0	0	1
-2	1	0	0	2
+2	1	3	0	1
+2	1	3	0	2
 \.
 
 
@@ -208,7 +269,7 @@ COPY productos (diesel, corriente, extra, s_diesel, id) FROM stdin;
 --
 
 COPY recibo (linea1, linea2, nit, tel, dir, footer, url, url_save, idestacion) FROM stdin;
-GRUPO EDS AUTOGAS SAS	ESSO INDUSTRIALES	900..459.737-5		CRA 71 N 19 - 53	GRACIAS POR SU COMPRA	http://190.85.166.35/ServicioGRPAliados/AT0001.svc	http://190.85.166.35/ServicioGRPAliados/CV0001.svc	4
+EDS ESSO PENALISA	GRUPO EDS  AUTOGAS	900.459.737	6345170	CRA 22 No 87 - 69	GRACIAS POR SU VISITA 	http://molapp.autogas.com.co/ServicioGRPAliados/AT0001.svc	http://molapp.autogas.com.co/ServicioGRPAliados/CV0001.svc	4
 \.
 
 
@@ -217,9 +278,12 @@ GRUPO EDS AUTOGAS SAS	ESSO INDUSTRIALES	900..459.737-5		CRA 71 N 19 - 53	GRACIAS
 --
 
 COPY recuperacion (idpos, tot1, tot2, tot3) FROM stdin;
-2	000086605416	000097460423	000000000000
-1	000072253175	000040720292	000000000000
+2	000000077303	000000030907	000000035632
+1	000000110839	000000029072	000000034537
 \.
+
+
+
 
 
 --
@@ -227,7 +291,6 @@ COPY recuperacion (idpos, tot1, tot2, tot3) FROM stdin;
 --
 
 COPY venta (autorizacion, id_venta, id_estacion, serial, km, cara, producto, precio, dinero, volumen, fecha, enviada, id, placa, direccion, idestacion, nombrecuenta, telefono) FROM stdin;
-1	\N	\N	\N	\N	2	\N	\N	\N	0	\N	t	2	\N	\N	\N	\N	\N
 1	\N	\N	\N	\N	1	\N	\N	\N	0	\N	t	1	\N	\N	\N	\N	\N
 \.
 
@@ -236,7 +299,7 @@ COPY venta (autorizacion, id_venta, id_estacion, serial, km, cara, producto, pre
 -- Name: venta_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('venta_id_seq', 2, true);
+SELECT pg_catalog.setval('venta_id_seq', 1, true);
 
 
 --
