@@ -1917,7 +1917,7 @@ function rest_auto(){
 				if(err){             
 				  return console.error('error de conexion 1', err);
 				}else{
-					var opt_rest_autorizar = {url: sprintf(url_auto+"/rest/Authorize/%1$s/%2$s/%3$s/%4$s/%5$s/%6$s/%7$s", serial, idproducto, idestacion, precio, tipopreset, preset, km),method: "POST"};  
+					var opt_rest_autorizar = {url: sprintf(url_auto+"/rest/Authorize/%1$s/%2$s/%3$s/%4$s/%5$s/%6$s/%7$s", serial, idproducto, idestacion, precio, tipopreset, preset, km),method: "POST",};  
 					rest_autorizar(opt_rest_autorizar,function(error, response, body) {					 
 							var elements = ds.deserialize(body);
 							var jsonString = ds.getJson(elements);			
@@ -2629,7 +2629,7 @@ function rest_sale(){
 			if(err){             
 			  return console.error('error de conexion 1', err);
 			}else{
-				var opt_rest_venta = {url: sprintf(url_save+"/rest/UploadSale/%1$s/%2$s/%3$s/%4$s/%5$s/%6$s/%7$s/%8$s/%9$s/%10$s/%11$s/%12$s", cara, idproducto, volumen, dinero, precio, idestacion, serial, autorizacion, n_id, km, fecha, fecha), method: "POST"}; /*global autorizacion*//*global idestacion*/   
+				var opt_rest_venta = {url: sprintf(url_save+"/rest/UploadSale/%1$s/%2$s/%3$s/%4$s/%5$s/%6$s/%7$s/%8$s/%9$s/%10$s/%11$s/%12$s", cara, idproducto, volumen, dinero, precio, idestacion, serial, autorizacion, n_id, km, fecha, fecha), method: "POST",}; /*global autorizacion*//*global idestacion*/   
 				console.log(n_id);
 				rest_venta(opt_rest_venta,function(error, response, body) {							
 						var elements2 = ds.deserialize(body);

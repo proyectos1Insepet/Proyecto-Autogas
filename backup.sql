@@ -129,33 +129,12 @@ ALTER TABLE public.recuperacion OWNER TO postgres;
 --
 
 CREATE TABLE strtran (
-    idstring integer NOT NULL,
+    idstring SERIAL,
     envio text,
     respuesta text
 );
 
 
-ALTER TABLE public.strtran OWNER TO postgres;
-
---
--- Name: strtran_idstring_seq; Type: SEQUENCE; Schema: public; Owner: postgres
---
-
-CREATE SEQUENCE strtran_idstring_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-
-ALTER TABLE public.strtran_idstring_seq OWNER TO postgres;
-
---
--- Name: strtran_idstring_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
---
-
-ALTER SEQUENCE strtran_idstring_seq OWNED BY strtran.idstring;
 
 
 --
