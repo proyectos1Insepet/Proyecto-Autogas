@@ -235,7 +235,7 @@ function reinicio(error){
              return console.error('error de conexion 1', err);
          }else{
 
-              client.query("SELECT linea1, linea2, nit, tel, dir, footer, idestacion, url, url_save FROM recibo;", function(err,result){
+              client.query("SELECT linea1, linea2, nit, tel, dir, footer, idestacion, url, url_save, offsetid FROM recibo;", function(err,result){
                     done();
                     if(err){
                         return console.error('error de conexion', err);
@@ -248,6 +248,7 @@ function reinicio(error){
                       footer   = result.rows[0].footer;
                       url_auto = result.rows[0].url;
                       url_save = result.rows[0].url_save;
+                      offsetid = result.rows[0].offsetid;
                     }
               });
               client.query(sprintf("SELECT enviada, volumen FROM venta WHERE id = (SELECT MAX(id) FROM venta WHERE cara ='1');"), function(err,result){
@@ -275,16 +276,16 @@ function reinicio(error){
               	    return console.error('error seleccionar ultima venta', err);
               	 }else{
               	    console.log(result.rows[0].enviada );
-              		    if (result.rows[0].enviada == false && result.rows[0].volumen == null){
-              			       printport.write('VENTA INCOMPLETA CARA 2\n');
-              			       printport.write('REALICE CIERRE DE TURNO\n');
-              			       printport.write('PARA INICIAR VENTA\n\n\n\n\n\n\n\n\n');
-              			       permite = 0;
-              			       ventaPendiente2 = 1;
-              		     }else{
-              			        permite2 = 1;
-              			        ventaPendiente2 = 0;
-              		     }
+          		    if (result.rows[0].enviada == false && result.rows[0].volumen == null){
+          			       printport.write('VENTA INCOMPLETA CARA 2\n');
+          			       printport.write('REALICE CIERRE DE TURNO\n');
+          			       printport.write('PARA INICIAR VENTA\n\n\n\n\n\n\n\n\n');
+          			       permite = 0;
+          			       ventaPendiente2 = 1;
+          		     }else{
+          			        permite2 = 1;
+          			        ventaPendiente2 = 0;
+          		     }
               	}
             });
             id_p1 = 0;
@@ -1446,6 +1447,9 @@ function rx_data_mux(data){
                 fecha = f.getDate() + "-" + (f.getMonth() +1) + "-" + f.getFullYear() + ' ' + f.getHours() + '_' + f.getMinutes();
                 console.log('Fecha: '+fecha);
                 muxport.write('OK');
+                var ajusteid;
+                ajusteid = parseInt(offsetid,10)+ parseInt(id_venta,10);
+                id_venta = String(ajusteid);
                 var n_id = idestacion + id_venta;
                 if(serial =='0000000000000000'){
                     insertado = 0;
@@ -2057,13 +2061,36 @@ function rx_data_mux(data){
                     muxport.write('BBB');
                     muxport.write('1');
                     muxport.write(cara);
+					muxport.write('*');
                     if(data[5] == '1'){
-                        console.log('\n\nEl Equipo no recibio la programación.\nerror: 1.\n');            //No cambio el precio
+                        console.log('\n\nEl Equipo no recibio el nuevo precio.\nerror: 1.\n');            //No cambio el precio
                     }else if(data[5] == '2'){
                         console.log('\n\nEl Equipo no recibio la programación.\nerror: 2.\n');           //No recibio el preset
-                    }
-                    muxport.write('*');
-                }
+                    }                    
+                }d
+				pg.connect(conString, function(err, client, done){                  //conectar a la base de datos
+                    if(err){
+                        return console.error('error conexion save_sale', err);
+                    }else{
+                        client.query("SELECT MAX(id) FROM venta;", function(err,result){        //consulto maximo id de venta
+                            done();
+                            if(err){                    
+                                return console.error('error toma MAX save_sale', err);d
+                            }else{
+                                console.log(result.rows[0].max);
+                                var last_id = result.rows[0].max;     
+	                            client.query(sprintf("UPDATE venta SET (id_venta, id_estacion, serial,  cara, producto, precio, dinero, volumen, fecha, enviada) = ('%1$s','%2$s', '%3$s', '%4$s', '%5$s', '%6$s', '%7$s', '%8$s', '%9$s','%10$s') WHERE id= (SELECT MAX(id) FROM venta WHERE cara = '%4$s');",'0000', idestacion, serial, cara, idproducto, precio, '0', '0', fecha, 0,last_id), function(err,result){
+                                    done();
+                                    if(err){                                                     
+                                        return console.error('error actualizacion save_sale', err); 
+                                    }else{							
+                                    }
+	                                pg.end();
+                               });
+	                        }
+                        });
+	                }
+                });
             break;
 
             case '5':                                                           //Caso registro totales
@@ -2365,18 +2392,25 @@ function corte_manual(){
 function rest_auto(){
     clearInterval(watch);
     clearInterval(watchInt);
+    console.log("Autorizacion L1");
 	pg.connect(conString, function(err, client, done){
 		if(err){
 		  return console.error('error de conexion 1', err);
 		}else{
 			trycatch(
 				function() {			
-					var opt_rest_autorizar = {url: sprintf(url_auto+"/rest/Authorize/%1$s/%2$s/%3$s/%4$s/%5$s/%6$s/%7$s", serial, idproducto, idestacion, precio, tipopreset, preset, km),method: "POST"};
+				    console.log("Url L1");
+					var opt_rest_autorizar = {url: sprintf(url_auto+"/rest/Authorize/%1$s/%2$s/%3$s/%4$s/%5$s/%6$s/%7$s", serial, idproducto, idestacion, precio, tipopreset, preset, km),method: "POST", timeout: 90000,};
 					rest_autorizar(opt_rest_autorizar,function(error, response, body) {
-					        if(response.statusCode !=200){
+					        if(error || response.statusCode !=200){
 							    printport.write('ERROR DE SERVIDOR \n');
-							    printport.write("ERROR: "+response.statusCode+'\n');
-							    console.log("Error: "+response.statusCode);
+							    console.log("Error servidor"+error);
+							    printport.write("ERROR: "+error+'\n');
+								muxport.write('BBB');
+								muxport.write('E');
+								muxport.write(String(cara));
+								muxport.write('1');                         //Limpia estado del mux e inicia pantalla
+								muxport.write('*');
 							}else{
     							var elements = ds.deserialize(body);
     							var jsonString = ds.getJson(elements);
@@ -2410,8 +2444,7 @@ function rest_auto(){
     								if(err){
     									return console.error('error de conexion', err);
     								}else{ //codigo a ejecutar si no hay problema de query
-    
-    
+    								    pg.end();
     								}
     							});
 							}
@@ -2430,6 +2463,7 @@ function rest_auto(){
 						if((printRestAuto == 1)  && (serial != OldSerial)){
 							OldSerial = serial;
 							printRestAuto = 0;
+
 							printport.write('\nNo se obtuvo \nrespuesta del servidor.\n\n\n\n');
 						}
 						if(!ActInternet  && (serial != OldSerial)){
@@ -2442,7 +2476,7 @@ function rest_auto(){
 								return console.error('error de conexion', err);
 							}else{ //codigo a ejecutar si no hay problema de query
 
-
+                                pg.end();
 							}
 						});
 						watch    = setInterval(watchful, 60000);//Revisa el estado de las banderas
@@ -2452,6 +2486,8 @@ function rest_auto(){
 		}
 	});
 }
+
+
 
 /*
 *********************************************************************************************************
@@ -2465,48 +2501,62 @@ function rest_auto(){
 function rest_autoSeg(){
     clearInterval(watch);
     clearInterval(watchInt);
+    console.log("Autorizacion L2");
 	pg.connect(conString, function(err, client, done){
 		if(err){
 		  return console.error('error de conexion 1', err);
 		}else{
 			trycatch(
 				function() {			
-					var opt_rest_autorizar = {url: sprintf(url_auto+"/rest/Authorize/%1$s/%2$s/%3$s/%4$s/%5$s/%6$s/%7$s", serialSeg, idproductoSeg, idestacion, precioSeg, tipopresetSeg, presetSeg, kmSeg),method: "POST",};
+				    console.log("Url L2");			
+					var opt_rest_autorizar = {url: sprintf(url_auto+"/rest/Authorize/%1$s/%2$s/%3$s/%4$s/%5$s/%6$s/%7$s", serialSeg, idproductoSeg, idestacion, precioSeg, tipopresetSeg, presetSeg, kmSeg),method: "POST",timeout:90000};
 					rest_autorizar(opt_rest_autorizar,function(error, response, body) {
-							var elements = ds.deserialize(body);
-							var jsonString = ds.getJson(elements);
-							console.log(opt_rest_autorizar);
-							console.log(jsonString);
-							var result = JSON.parse(jsonString);            //Respuesta autogas en autorización
-							cantidadAutorizada  =  String(result.aT0001responseREST.cantidadAutorizada.value);
-							codigoRetorno       =  result.aT0001responseREST.codigoRetorno.value;
-							direccion           =  result.aT0001responseREST.direccion.value;
-							telefono            =  result.aT0001responseREST.telefono.value;
-							idproducto          =  result.aT0001responseREST.idproducto.value;
-							numeroAutorizacion  =  result.aT0001responseREST.numeroAutorizacion.value;
-							nombreCuenta        =  result.aT0001responseREST.nombreCuenta.value;
-							placa               =  result.aT0001responseREST.placa.value;
-							retorno             =  result.aT0001responseREST.retorno.value;
-							tipoConvenio        =  result.aT0001responseREST.tipoConvenio.value;
-							tipoRetorno         =  result.aT0001responseREST.tipoRetorno.value;
-							trama               =  result.aT0001responseREST.trama.value;
-							valorConvenio       =  String(result.aT0001responseREST.valorConvenio.value);
-							if(serialSeg !='0000000000000000'){
-								autorizacion =  String(numeroAutorizacion);
+							if(error || response.statusCode !=200){
+							    printport.write('ERROR DE SERVIDOR \n');
+							    console.log("Error servidor"+error);
+							    printport.write("ERROR: "+error+'\n');
+								muxport.write('BBB');
+								muxport.write('E');
+								muxport.write(String(cara));
+								muxport.write('1');                         //Limpia estado del mux e inicia pantalla
+								muxport.write('*');
 							}else{
-								autorizacion = '00000000-0000-0000-0000-000000000000';
-							}
-							autorizaMuxSeg();
-							console.log(direccion);
-							console.log(placa);							
-							client.query(sprintf("INSERT INTO strtran (envio, respuesta) VALUES ('%1$s','%2$s');",opt_rest_autorizar,jsonString), function(err,result){
-								done();
-								if(err){
-									return console.error('error de conexion', err);
-								}else{ //codigo a ejecutar si no hay problema de query
-								}
-							});
-						}
+								var elements = ds.deserialize(body);
+								var jsonString = ds.getJson(elements);
+								console.log(opt_rest_autorizar);
+								console.log(jsonString);
+								var result = JSON.parse(jsonString);            //Respuesta autogas en autorización
+								cantidadAutorizada  =  String(result.aT0001responseREST.cantidadAutorizada.value);
+								codigoRetorno       =  result.aT0001responseREST.codigoRetorno.value;
+								direccion           =  result.aT0001responseREST.direccion.value;
+								telefono            =  result.aT0001responseREST.telefono.value;
+								idproducto          =  result.aT0001responseREST.idproducto.value;
+								numeroAutorizacion  =  result.aT0001responseREST.numeroAutorizacion.value;
+								nombreCuenta        =  result.aT0001responseREST.nombreCuenta.value;
+								placa               =  result.aT0001responseREST.placa.value;
+								retorno             =  result.aT0001responseREST.retorno.value;
+								tipoConvenio        =  result.aT0001responseREST.tipoConvenio.value;
+								tipoRetorno         =  result.aT0001responseREST.tipoRetorno.value;
+								trama               =  result.aT0001responseREST.trama.value;
+								valorConvenio       =  String(result.aT0001responseREST.valorConvenio.value);
+								if(serialSeg !='0000000000000000'){
+									autorizacion =  String(numeroAutorizacion);
+								}else{
+								    autorizacion = '00000000-0000-0000-0000-000000000000';
+							    }
+							    autorizaMuxSeg();
+    							console.log(direccion);
+    							console.log(placa);							
+    							client.query(sprintf("INSERT INTO strtran (envio, respuesta) VALUES ('%1$s','%2$s');",opt_rest_autorizar,jsonString), function(err,result){
+    								done();
+    								if(err){
+    									return console.error('error de conexion', err);
+    								}else{ //codigo a ejecutar si no hay problema de query
+    								    pg.end();
+    								}
+    							});
+						    }
+					    }
 					);
 					
 				},  function(err) {                              //error en el envio de datos
@@ -2520,6 +2570,7 @@ function rest_autoSeg(){
 						console.log("Serial: "+ serialSeg + "Old: " + OldSerial);
 						if((printRestAutoSeg == 1)  && (serialSeg != OldSerial)){
 							OldSerial = serialSeg;
+
 							printRestAutoSeg = 0;
 							printport.write('\nNo se obtuvo \nrespuesta del servidor.\n\n\n\n');
 						}
@@ -2532,8 +2583,7 @@ function rest_autoSeg(){
 							if(err){
 								return console.error('error de conexion', err);
 							}else{ //codigo a ejecutar si no hay problema de query
-
-
+                                pg.end();
 							}
 						});
 						watch    = setInterval(watchful, 60000);//Revisa el estado de las banderas
@@ -2543,6 +2593,10 @@ function rest_autoSeg(){
 		}
 	});
 }
+
+
+
+
 
 /*
 *********************************************************************************************************
@@ -2615,7 +2669,6 @@ function autorizaMux(){
     }
     else{
         muxport.write('N');
-
         printport.write('\n\nERROR:\n ');//mod ayer
         switch(codigoRetorno){
             case 0:                                     //Códigos de error de autogas para negar despacho
@@ -2784,7 +2837,6 @@ function autorizaMuxSeg(){
     }
     else{
         muxport.write('N');
-
         printport.write('\n\nERROR:\n ');//mod ayer
         switch(codigoRetorno){
             case 0:                                     //Códigos de error de autogas para negar despacho
@@ -3174,7 +3226,8 @@ function save_sale(){
                         }else{
                             printrec = 0;                                                        
 							imp = 0;
-							print_venta(); //Imprime venta sin insertar en la DB                            
+							print_venta(); //Imprime venta sin insertar en la DB  
+							pg.end();
                         }
                     });
                 }                 
@@ -3225,7 +3278,8 @@ function save_saleSeg(){
                         }else{
                             printrec = 0;                                                        
 							imp = 0;
-							print_ventaSeg(); //Imprime venta sin insertar en la DB                            
+							print_ventaSeg(); //Imprime venta sin insertar en la DB  
+							pg.end();
                         }
                     });
                 }                 
@@ -3281,7 +3335,8 @@ function save_sale_ef(){
                     if(cara == '2'){
                         imp2 = 0;
                         print_ventaSeg(); //Imprime venta sin insertar en la DB
-                    }                    
+                    }  
+                    pg.end();
                 }
             });
         }
@@ -3957,7 +4012,8 @@ function print_copy(){
 					printport.write('Cedula:' + '\n');
 					printport.write('       --------------------'+ '\n\n');
 					printport.write(footer+ '\n');
-					printport.write('\n\n\n\n\n\n\n');   									       
+					printport.write('\n\n\n\n\n\n\n'); 
+					pg.end();
 				}
 			});
         }
@@ -4065,7 +4121,8 @@ function print_copySeg(){
 					printport.write('Cedula:' + '\n');
 					printport.write('       --------------------'+ '\n\n');
 					printport.write(footer+ '\n');
-					printport.write('\n\n\n\n\n\n\n');   									       
+					printport.write('\n\n\n\n\n\n\n'); 
+					pg.end();
 				}
 			});
         }
@@ -4133,6 +4190,7 @@ function enviaInternet(){
 		                    imprime_saldo = 0;
                             rest_sale_internet();  
 		                }
+		                pg.end();
 		            }
 	            }
             });
@@ -4144,6 +4202,7 @@ function enviaInternet(){
                 }else{
                     ActInternet = result.rows[0].internet;
                     console.log("Internet activo: "+ActInternet);
+                    pg.end();
                 }
             });
         }
@@ -4212,6 +4271,7 @@ function enviaInternetSeg(){
                             rest_sale_internetSeg();                               
 		                }
 		            }
+		            pg.end();
 	            }
             });
         }
@@ -4350,6 +4410,7 @@ function save_saleInt(){
                             }
                         }
                     });
+                    pg.end();
                 }                 
             });  
         }
@@ -4399,7 +4460,8 @@ function save_sale_efInt(){
                     }
                     if(caraint == '2'){
                         print_ventaIntSeg(); //Imprime venta sin insertar en la DB
-                    }                    
+                    } 
+                    pg.end();
                 }
             });
         }
