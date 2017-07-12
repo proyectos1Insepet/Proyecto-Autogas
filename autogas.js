@@ -1246,83 +1246,6 @@ function print_ventarec(){
 }
 
 
-<<<<<<< HEAD
-=======
-function rest_auto(){
-    clearInterval(watch);
-    clearInterval(watchInt);
-    trycatch(	
-		function() {
-			pg.connect(conString, function(err, client, done){
-				if(err){             
-				  return console.error('error de conexion 1', err);
-				}else{
-					var opt_rest_autorizar = {url: sprintf(url_auto+"/rest/Authorize/%1$s/%2$s/%3$s/%4$s/%5$s/%6$s/%7$s", serial, idproducto, idestacion, precio, tipopreset, preset, km),method: "POST",};  
-					rest_autorizar(opt_rest_autorizar,function(error, response, body) {					 
-							var elements = ds.deserialize(body);
-							var jsonString = ds.getJson(elements);			
-							console.log(jsonString);			
-							var result = JSON.parse(jsonString);            //Respuesta autogas en autorización			
-							cantidadAutorizada  =  String(result.aT0001responseREST.cantidadAutorizada.value);
-							codigoRetorno       =  result.aT0001responseREST.codigoRetorno.value;
-							direccion           =  result.aT0001responseREST.direccion.value;
-							telefono            =  result.aT0001responseREST.telefono.value;
-							idproducto          =  result.aT0001responseREST.idproducto.value;
-							numeroAutorizacion  =  result.aT0001responseREST.numeroAutorizacion.value;
-							nombreCuenta        =  result.aT0001responseREST.nombreCuenta.value;
-							placa               =  result.aT0001responseREST.placa.value;  
-							retorno             =  result.aT0001responseREST.retorno.value;
-							tipoConvenio        =  result.aT0001responseREST.tipoConvenio.value;
-							tipoRetorno         =  result.aT0001responseREST.tipoRetorno.value;
-							trama               =  result.aT0001responseREST.trama.value;
-							valorConvenio       =  String(result.aT0001responseREST.valorConvenio.value);
-							if(serial !='0000000000000000'){
-								autorizacion =  String(numeroAutorizacion);
-							}else{
-								autorizacion = '00000000-0000-0000-0000-000000000000';
-							}
-							autorizaMux();
-							console.log(direccion);
-							console.log(placa);
-							console.log("Termina post");
-							client.query(sprintf("INSERT INTO strtran (envio, respuesta) VALUES ('%1$s','%2$s');",sprintf(url_auto+"/rest/Authorize/%1$s/%2$s/%3$s/%4$s/%5$s/%6$s/%7$s", serial, idproducto, idestacion, precio, tipopreset, preset, km),jsonString), function(err,result){
-								done();
-								if(err){                        
-									return console.error('error de conexion', err);
-								}else{ //codigo a ejecutar si no hay problema de query
-									
-									
-								}
-							});
-						}
-					);
-				}
-			});
-		},  function(err) {                              //error en el envio de datos
-				console.log(err.stack);
-				console.log("Termina post con error");
-				muxport.write('BBB');
-				muxport.write('E');
-				muxport.write(String(cara));
-				muxport.write('1');                         //Limpia estado del mux e inicia pantalla
-				muxport.write('*');
-				console.log("Serial: "+ serial + "Old: " + OldSerial);
-				if((printRestAuto == 1)  && (serial != OldSerial)){
-					OldSerial = serial;
-					printRestAuto = 0;
-					printport.write('\nNo se obtuvo \nrespuesta del servidor.\n\n\n\n');
-				}
-				if(!ActInternet  && (serial != OldSerial)){
-				    printport.write('  VERIFIQUE CONEXION DE RED.  \n');
-				    printport.write(' NO HAY CONEXION CON INTERNET.  \n\n\n\n');
-				}
-				watch    = setInterval(watchful, 60000);//Revisa el estado de las banderas
-                watchInt = setInterval(enviaInternetSeg, 60000);//Revisa el estado de las banderas
-			}
-	);
-    
-}
->>>>>>> origin/master
 
 /*
 *********************************************************************************************************
@@ -3377,7 +3300,6 @@ function save_saleSeg(){
 *               
 *********************************************************************************************************
 */
-<<<<<<< HEAD
 function save_sale_ef(){
     pg.connect(conString, function(err, client, done){                  //conectar a la base de datos
         if(err){
@@ -3422,91 +3344,6 @@ function save_sale_ef(){
             });
         }
     }); 
-=======
-function rest_sale(){
-    var n_id = idestacion + id_venta;
-    clearInterval(watch);
-    clearInterval(watchInt);
-    trycatch(
-	    function() {
-		pg.connect(conString, function(err, client, done){
-			if(err){             
-			  return console.error('error de conexion 1', err);
-			}else{
-				var opt_rest_venta = {url: sprintf(url_save+"/rest/UploadSale/%1$s/%2$s/%3$s/%4$s/%5$s/%6$s/%7$s/%8$s/%9$s/%10$s/%11$s/%12$s", cara, idproducto, volumen, dinero, precio, idestacion, serial, autorizacion, n_id, km, fecha, fecha), method: "POST",}; /*global autorizacion*//*global idestacion*/   
-				console.log(n_id);
-				rest_venta(opt_rest_venta,function(error, response, body) {							
-						var elements2 = ds.deserialize(body);
-						var jsonString2 = ds.getJson(elements2);        
-						console.log(jsonString2);        
-						var result2 = JSON.parse(jsonString2);        
-						codigoError        =  result2.cV0001responseREST.codError.value;
-						dineroDia          =  result2.cV0001responseREST.dineroDia.value;           //Resultados enviados por Autogas
-						dineroMes          =  result2.cV0001responseREST.dineroMes.value;
-						dineroSema         =  result2.cV0001responseREST.dineroSema.value;
-						imprime_contadores =  String(result2.cV0001responseREST.imprimeContador.value);              
-						imprime_saldo      =  String(result2.cV0001responseREST.imprimeSaldo.value);						
-						placa              =  result2.cV0001responseREST.placa.value;
-						retorno            =  result2.cV0001responseREST.retorno.value;
-						saldo              =  String(result2.cV0001responseREST.saldo.value);
-						visitasDia         =  String(result2.cV0001responseREST.visitasDia.value);
-						visitasMes         =  String(result2.cV0001responseREST.visitasMes.value);
-						visitasSema        =  String(result2.cV0001responseREST.visitasSema.value);
-						volDia             =  String(result2.cV0001responseREST.volDia.value);
-						volMes             =  String(result2.cV0001responseREST.volMes.value);
-						volSema            =  String(result2.cV0001responseREST.volSema.value);
-						if(cara =='1'){
-							imp =0;
-						}
-						if(cara =='2'){
-							imp2 =0;
-						}
-						console.log("Termina post");
-						b_enviada = 'TRUE';
-						error_local = '0';
-						if(serial =='0000000000000000'){
-							save_sale_ef();    
-						}
-						if(serial != '0000000000000000' ){
-							save_sale();
-						}
-						client.query(sprintf("INSERT INTO strtran (envio, respuesta) VALUES ('%1$s','%2$s');",sprintf(url_save+"/rest/UploadSale/%1$s/%2$s/%3$s/%4$s/%5$s/%6$s/%7$s/%8$s/%9$s/%10$s/%11$s/%12$s", cara, idproducto, volumen, dinero, precio, idestacion, serial, autorizacion, n_id, km, fecha, fecha),jsonString2), function(err,result){
-							done();
-							if(err){                        
-								return console.error('error de conexion', err);
-							}else{ //codigo a ejecutar si no hay problema de query												
-							}
-						});
-					}
-				);
-			}			
-		});			
-		}, function(err) {
-			console.log(err.stack);
-			console.log("Termina post con error");
-			error_local = '1';
-			b_enviada = 'FALSE'; 
-			if(cara =='1' && imp ==0){
-				printport.write('No se logro enviar al servidor\n\n'); //Informa que no se pudo subir venta a remoto
-				printport.write('*****VENTA ALMACENADA LOCAL*****\n');
-				printport.write('****SIN CONEXION A INTERNET*****\n');            
-			}
-			if(cara =='2' && imp2 ==0){
-				printport.write('No se logro enviar al servidor\n\n'); //Informa que no se pudo subir venta a remoto
-				printport.write('*****VENTA ALMACENADA LOCAL*****\n');
-				printport.write('****SIN CONEXION A INTERNET*****\n');            
-			}
-			if(serial =='0000000000000000'){
-				save_sale_ef();    
-			}
-			if(serial != '0000000000000000'){
-				save_sale();
-			}
-			watch    = setInterval(watchful, 60000);//Revisa el estado de las banderas
-            watchInt = setInterval(enviaInternetSeg, 60000);//Revisa el estado de las banderas
-		}	
-	);
->>>>>>> origin/master
 }
 
 /*
@@ -5281,7 +5118,7 @@ function watchful(){
         printport.write('REALICE CIERRE DE TURNO\n');
         printport.write('PARA INICIAR VENTA\n\n\n\n\n\n');              //A la hora programada se ejecuta la funcion para obligar a corte
         printport.write('*** CORTE PROGRAMADO***\n');
-        permite  = 0;
+        permite  = 0;  
         corte_ok = 1;
         console.log('Pregunta');
     }
