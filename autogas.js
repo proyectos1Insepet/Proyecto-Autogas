@@ -1448,8 +1448,11 @@ function rx_data_mux(data){
                 console.log('Fecha: '+fecha);
                 muxport.write('OK');
                 var ajusteid;
+                console.log ("offset"+ offsetid);
                 ajusteid = parseInt(offsetid,10)+ parseInt(id_venta,10);
+                console.log(ajusteid);
                 id_venta = String(ajusteid);
+            
                 var n_id = idestacion + id_venta;
                 if(serial =='0000000000000000'){
                     insertado = 0;

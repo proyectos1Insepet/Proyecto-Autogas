@@ -129,7 +129,7 @@ ALTER TABLE public.recuperacion OWNER TO postgres;
 --
 
 CREATE TABLE strtran (
-    idstring integer NOT NULL,
+    idstring SERIAL,
     envio text,
     respuesta text
 );
