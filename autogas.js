@@ -175,6 +175,7 @@ var volumenrec      = new Buffer(7); /*global volumenrec*/
 var autorizacion    = new Buffer(38);
 var autorizaefec    = new Buffer(38);
 var id_venta        = new Buffer(7);
+var id_ventaoff     = new Buffer(7);
 var id_ventaSeg     = new Buffer(7);
 var id_ventarec     = new Buffer(7);
 var producto1       = new Buffer(12);
@@ -1451,9 +1452,9 @@ function rx_data_mux(data){
                 console.log ("offset"+ offsetid);
                 ajusteid = parseInt(offsetid,10)+ parseInt(id_venta,10);
                 console.log(ajusteid);
-                id_venta = String(ajusteid);
+                id_ventaoff = String(ajusteid);
             
-                var n_id = idestacion + id_venta;
+                var n_id = idestacion + id_ventaoff;
                 if(serial =='0000000000000000'){
                     insertado = 0;
                     autorizaefec = '00000000-0000-0000-0000-000000000000';
@@ -1474,7 +1475,7 @@ function rx_data_mux(data){
 					dineroSeg	    =   dinero;
 					precioSeg       =   precio;
 					serialSeg       =   serial;
-					id_ventaSeg     =   id_venta;
+					id_ventaSeg     =   id_ventaoff;
 					kmSeg			=   km;
 					rest_saleSeg();
                     imp2 = 0;
@@ -2407,8 +2408,9 @@ function rest_auto(){
 					rest_autorizar(opt_rest_autorizar,function(error, response, body) {
 					        if(error || response.statusCode !=200){
 							    printport.write('ERROR DE SERVIDOR \n');
-							    console.log("Error servidor"+error);
-							    printport.write("ERROR: "+error+'\n');
+							    console.log("Error servidor "+error );
+							    console.log(response.statusCode);
+							    printport.write("ERROR: "+error +" "+ "SR: "+ response.statusCode+'\n');
 								muxport.write('BBB');
 								muxport.write('E');
 								muxport.write(String(cara));
@@ -2517,7 +2519,7 @@ function rest_autoSeg(){
 							if(error || response.statusCode !=200){
 							    printport.write('ERROR DE SERVIDOR \n');
 							    console.log("Error servidor"+error);
-							    printport.write("ERROR: "+error+'\n');
+							    printport.write("ERROR: "+error +" "+ "SR: "+ response.statusCode+'\n');
 								muxport.write('BBB');
 								muxport.write('E');
 								muxport.write(String(cara));
@@ -2947,7 +2949,7 @@ function autorizaMuxSeg(){
 *********************************************************************************************************
 */
 function rest_sale(){
-    var n_id = idestacion + id_venta;
+    var n_id = idestacion + id_ventaoff;
     clearInterval(watch);
     clearInterval(watchInt);
 	pg.connect(conString, function(err, client, done){
@@ -2959,7 +2961,7 @@ function rest_sale(){
 				var opt_rest_venta = {url: sprintf(url_save+"/rest/UploadSale/%1$s/%2$s/%3$s/%4$s/%5$s/%6$s/%7$s/%8$s/%9$s/%10$s/%11$s/%12$s", cara, idproducto, volumen, dinero, precio, idestacion, serial, autorizacion, n_id, km, fecha, fecha), method: "POST",}; /*global autorizacion*//*global idestacion*/
 				console.log(n_id);
 				rest_venta(opt_rest_venta,function(error, response, body) {
-				        if(response.statusCode !=200){
+				        if(error || response.statusCode !=200){
 						    printport.write('ERROR DE SERVIDOR \n');
 						    printport.write("ERROR: "+response.statusCode+'\n');
 						    console.log("Error: "+response.statusCode);
@@ -3218,8 +3220,8 @@ function save_sale(){
                     }else{
                        b_enviada = 'FALSE';
                     }
-                    console.log("Save sale>>"+id_venta);
-                    client.query(sprintf("UPDATE venta SET (id_venta, id_estacion, serial,  cara, producto, precio, dinero, volumen, fecha, enviada) = ('%1$s','%2$s', '%3$s', '%4$s', '%5$s', '%6$s', '%7$s', '%8$s', '%9$s','%10$s') WHERE id= (SELECT MAX(id) FROM venta WHERE cara = '%4$s');",id_venta, idestacion, serial, cara, idproducto, precio, dinero, vol_tabla, fecha, b_enviada,last_id), function(err,result){
+                    console.log("Save sale>>"+id_ventaoff);
+                    client.query(sprintf("UPDATE venta SET (id_venta, id_estacion, serial,  cara, producto, precio, dinero, volumen, fecha, enviada) = ('%1$s','%2$s', '%3$s', '%4$s', '%5$s', '%6$s', '%7$s', '%8$s', '%9$s','%10$s') WHERE id= (SELECT MAX(id) FROM venta WHERE cara = '%4$s');",id_ventaoff, idestacion, serial, cara, idproducto, precio, dinero, vol_tabla, fecha, b_enviada,last_id), function(err,result){
                         done();
                         if(err){                            
                             printrec = 0;                            
@@ -3270,7 +3272,7 @@ function save_saleSeg(){
                     }else{
                        b_enviada = 'FALSE';
                     }
-                    console.log("Save sale>>"+id_venta);
+                    console.log("Save sale>>"+id_ventaoff);
                     client.query(sprintf("UPDATE venta SET (id_venta, id_estacion, serial,  cara, producto, precio, dinero, volumen, fecha, enviada) = ('%1$s','%2$s', '%3$s', '%4$s', '%5$s', '%6$s', '%7$s', '%8$s', '%9$s','%10$s') WHERE id= (SELECT MAX(id) FROM venta WHERE cara = '%4$s');",id_ventaSeg, idestacion, serialSeg, cara, idproductoSeg, precioSeg, dineroSeg, vol_tabla, fecha, b_enviada,last_id), function(err,result){
                         done();
                         if(err){                            
@@ -3308,7 +3310,7 @@ function save_sale_ef(){
             volumen[3]=46;
             vol_tabla = parseFloat(volumen);
             console.log("Insertado: "+ insertado);
-            client.query(sprintf("INSERT INTO venta  (id_venta, idestacion, serial,  cara, producto, precio, dinero, volumen, fecha, enviada,autorizacion,km) VALUES ('%1$s','%2$s', '%3$s', '%4$s', '%5$s', '%6$s', '%7$s', '%8$s', '%9$s','%10$s','%11$s','%12$s')", id_venta, idestacion, serial, cara, idproducto, precio, dinero, vol_tabla, fecha,b_enviada,'00000000-0000-0000-0000-000000000000',0), function(err,result){
+            client.query(sprintf("INSERT INTO venta  (id_venta, idestacion, serial,  cara, producto, precio, dinero, volumen, fecha, enviada,autorizacion,km) VALUES ('%1$s','%2$s', '%3$s', '%4$s', '%5$s', '%6$s', '%7$s', '%8$s', '%9$s','%10$s','%11$s','%12$s')", id_ventaoff, idestacion, serial, cara, idproducto, precio, dinero, vol_tabla, fecha,b_enviada,'00000000-0000-0000-0000-000000000000',0), function(err,result){
                 done();
                 if(err){                                        
                     if(cara == '1'){
@@ -3372,7 +3374,7 @@ function print_venta(){
             printport.write('      '+nit+'\n');
             printport.write('      Tel: '+tel+'\n');
             printport.write('  '+dir+ '\n\n');            
-            printport.write('Numero: ' +parseInt(idestacion+id_venta,10)+ '\n\n');            
+            printport.write('Numero: ' +parseInt(idestacion+id_ventaoff,10)+ '\n\n');            
             var f = new Date();
             printport.write('Fecha:' + String(f.getDate() + "-" + (f.getMonth() + 1) + "-" + f.getFullYear() + ' ' + f.getHours() + ':' + f.getMinutes()) + '\n\n');                                                      
             if(imprime_contadores == 1){         
@@ -3550,7 +3552,7 @@ function print_venta(){
                 printport.write('      '+nit+'\n');
                 printport.write('      Tel: '+tel+'\n');
                 printport.write('  '+dir+ '\n\n');
-                printport.write('Numero: ' +parseInt(idestacion+id_venta,10)+ '\n\n');
+                printport.write('Numero: ' +parseInt(idestacion+id_ventaoff,10)+ '\n\n');
                 f = new Date();
                 printport.write('Fecha:' + String(f.getDate() + "-" + (f.getMonth() + 1) + "-" + f.getFullYear() + ' ' + f.getHours() + ':' + f.getMinutes()) + '\n\n');                                                      
                 codigoError = '0';
@@ -3651,7 +3653,7 @@ function print_ventaSeg(){
             printport.write('      Tel: '+tel+'\n');
             printport.write('  '+dir+ '\n\n');
             if(printrec == 0){
-                printport.write('Numero: ' +parseInt(idestacion+id_venta,10)+ '\n\n');
+                printport.write('Numero: ' +parseInt(idestacion+id_ventaSeg,10)+ '\n\n');
             }
             if(printrec == 1){
                 printport.write('Numero: ' +id_ventarec+ '\n\n');
