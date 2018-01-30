@@ -5135,8 +5135,6 @@ function watchful(){
 *********************************************************************************************************
 */
 
-//muxport.open(abrir);                    //Abre la comunicacion con el mux
-//printport.open(abrir_print);            //Abre la comunicacion con el mux
 watch    = setInterval(watchful, 60000);//Revisa el estado de las banderas
 watchInt = setInterval(enviaInternetSeg, 60000);//Revisa el estado de las banderas
 
